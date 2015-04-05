@@ -49,7 +49,6 @@ public class NetworkListener implements Listener {
         ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
         KillAura ka = (KillAura) acp.getCheat("KillAura");
 
-        AntiCheat.log("click");
         ka.onClick(event);
     }
 
