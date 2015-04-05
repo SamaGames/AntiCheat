@@ -95,7 +95,13 @@ public class PunishmentsManager {
 		jedis.close();
 	}
 
-	public void automaticBan(Player player, String reason) {
+	/**
+	 * Bans the player and return the time of the ban
+	 * @param player The player to ban
+	 * @param reason The reason of the ban
+	 * @return The ban duration in seconds, or -1 for definitive ban
+	 */
+	public long automaticBan(Player player, String reason) {
 		Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
 		if (months > 6) {
 			manualDefBan(player, reason);
@@ -106,6 +112,8 @@ public class PunishmentsManager {
 			manualTempBan(player, cal.getTime(), reason);
 		}
 		increaseBanScore(player.getUniqueId());
+
+		return (months > 6) ? -1 : months * 2592000;
 	}
 
 	public static String formatTime(long time) {

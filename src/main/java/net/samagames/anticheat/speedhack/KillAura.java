@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
+import net.samagames.anticheat.database.PunishmentsManager;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -12,6 +13,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -29,6 +32,7 @@ public class KillAura extends CheatTask {
     public EntityHuman target = null;
     public Location targetLocation = null;
     public int numberTouched = 0;
+    public HashMap<VirtualLocation, VirtualLocation> touched = new HashMap<>();
 
     public long nextTest = System.currentTimeMillis();
     public int countDown = 0;
@@ -60,10 +64,14 @@ public class KillAura extends CheatTask {
         if(touch)
         {
             destroyTarget();
+            touched.put(new VirtualLocation(targetLocation), new VirtualLocation(player.getLocation()));
             numberTouched++;
             if(numberTouched >= 3)
             {
                 AntiCheat.broadcast("Relevant number : " + player.getName() + "; Threat: " + this.getClass().getSimpleName());
+                long duration = AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura");
+                String humanDuration = PunishmentsManager.formatTime(duration);
+                AntiCheat.punishmentsManager.addCheatLog(new KillauraCheatLog(player, humanDuration, touched));
                 numberTouched = 0;
                 return;
             }
@@ -222,7 +230,7 @@ public class KillAura extends CheatTask {
      * @param player le shooter
      * @param target la cible
      * @param maxRange en bloc
-     * @param aiming 1 par défaut, pour augmenter la marge de 20% 1.20
+     * @param aiming 1 par dï¿½faut, pour augmenter la marge de 20% 1.20
      * @return
      */
     public boolean isTargeting(Player player, Location target, int maxRange, double aiming) {
