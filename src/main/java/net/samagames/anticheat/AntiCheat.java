@@ -1,8 +1,8 @@
 package net.samagames.anticheat;
 
-import net.samagames.anticheat.forcefield.ForceFieldListener;
+
 import net.samagames.anticheat.globalListeners.NetworkListener;
-import net.samagames.anticheat.speedhack.SpeedHack;
+import net.samagames.anticheat.speedhack.KillAura;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -28,14 +28,18 @@ public class AntiCheat extends JavaPlugin implements Listener {
     public static AntiCheat instance;
 
     public static void login(Player player) {
-        acplayers.put(player.getUniqueId(), new ACPlayer(player));
+        ACPlayer acp = new ACPlayer(player);
         for (Class<? extends CheatTask> cheat : cheats) {
             try {
-                cheat.getConstructor(Player.class).newInstance(player);
+                acp.addCheat(cheat.getSimpleName(), cheat.getConstructor(Player.class).newInstance(player));
+                log("Load :" + cheat.getSimpleName());
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         }
+        acplayers.put(player.getUniqueId(), acp);
+
+        log("Added "+ player.getName());
     }
 
     public static void logout(Player player) {
@@ -58,11 +62,17 @@ public class AntiCheat extends JavaPlugin implements Listener {
         instance = this;
 
         //cheats.add(SpeedHack.class);
+        cheats.add(KillAura.class);
 
         Bukkit.getPluginManager().registerEvents(new NetworkListener(), this);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             login(player);
         }
+    }
+
+    public void broadcast(String message)
+    {
+
     }
 }

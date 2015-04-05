@@ -19,6 +19,7 @@ public abstract class CheatTask implements Runnable {
     public CheatTask(Player player) {
         this.player = player;
 
+        AntiCheat.log("Register task for "+ player.getName());
         task = Bukkit.getScheduler().runTaskTimer(AntiCheat.instance, this, 1, 1);
     }
 

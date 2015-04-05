@@ -1,6 +1,6 @@
 name: AntiCheat
 main: net.samagames.anticheat.AntiCheat
 version: 1.0.0
-authors: [zyuiop]
+authors: [zyuiop, Geekpower14]
 website: http://samagames.net/
 depend: [MasterBundle]
