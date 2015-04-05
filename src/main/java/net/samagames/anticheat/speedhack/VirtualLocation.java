@@ -1,6 +1,5 @@
 package net.samagames.anticheat.speedhack;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 /**
@@ -27,28 +26,28 @@ public class VirtualLocation {
 		this.world = loc.getWorld().getName();
 	}
 
-	public void setX(double x) {
-		this.x = x;
-	}
-
-	public void setY(double y) {
-		this.y = y;
-	}
-
-	public void setZ(double z) {
-		this.z = z;
-	}
-
 	public double getX() {
 		return x;
+	}
+
+	public void setX(double x) {
+		this.x = x;
 	}
 
 	public double getY() {
 		return y;
 	}
 
+	public void setY(double y) {
+		this.y = y;
+	}
+
 	public double getZ() {
 		return z;
+	}
+
+	public void setZ(double z) {
+		this.z = z;
 	}
 
 	public String getWorld() {
