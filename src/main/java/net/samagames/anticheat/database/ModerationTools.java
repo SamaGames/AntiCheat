@@ -36,6 +36,12 @@ public class ModerationTools {
         message += ".";
 
         modMessage("Samaritan", ChatColor.DARK_RED, message);
+
+        Jedis j = MasterBundle.getRedisBungee();
+        String from = "Samaritan";
+        String motif = "Le joueur " + toPseudo + " a été banni pour " + sanction.getMotif();
+        j.publish("redisbungee-allservers", "global#####"+from+"#####"+motif);
+        j.close();
     }
 
 	public static void sendModMessage(JsonModMessage message) {

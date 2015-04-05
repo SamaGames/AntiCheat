@@ -1,8 +1,11 @@
 package net.samagames.anticheat.database;
 
+import net.samagames.anticheat.AntiCheat;
+import net.samagames.anticheat.speedhack.KillauraCheatLog;
 import net.zyuiop.MasterBundle.FastJedis;
 import net.zyuiop.MasterBundle.MasterBundle;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.libs.com.google.gson.Gson;
 import redis.clients.jedis.Jedis;
@@ -126,23 +129,37 @@ public class PunishmentsManager {
 	 * @param player The player to ban
 	 * @param reason The reason of the ban
 	 */
-	public void automaticBan(OfflinePlayer player, String reason, BasicCheatLog log) {
-		Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
-		if (months > 6) {
-			manualDefBan(player, reason);
-			log.setBanTime("Définitif");
-		} else {
-			Calendar cal = Calendar.getInstance(); // creates calendar
-			cal.setTime(new Date()); // sets calendar time/date
-			cal.add(Calendar.MONTH, months);
-			Date end = cal.getTime();
-			manualTempBan(player, end, reason);
+	public void automaticBan(final OfflinePlayer player, final String reason, final BasicCheatLog log) {
+		AntiCheat.broadcastSamaritan("Quels sont vos ordres ?");
+		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
+			@Override
+			public void run() {
+				AntiCheat.broadcastGreer("Tu te trompes, mon cher Samaritain, quels sont tes ordres pour nous ?");
+			}
+		}, 20L);
+		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
+			@Override
+			public void run() {
+				AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheatName());
 
-			long time = ((end.getTime() - new Date().getTime()) / 1000);
-			insertBan(player.getUniqueId(), reason, (int) time);
-			log.setBanTime(formatTime(time + 1));
-		}
-		increaseBanScore(player.getUniqueId());
-		addCheatLog(log);
+				Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
+				if (months > 6) {
+					manualDefBan(player, reason);
+					log.setBanTime("Définitif");
+				} else {
+					Calendar cal = Calendar.getInstance(); // creates calendar
+					cal.setTime(new Date()); // sets calendar time/date
+					cal.add(Calendar.MONTH, months);
+					Date end = cal.getTime();
+					manualTempBan(player, end, reason);
+
+					long time = ((end.getTime() - new Date().getTime()) / 1000);
+					insertBan(player.getUniqueId(), reason, (int) time);
+					log.setBanTime(formatTime(time + 1));
+				}
+				increaseBanScore(player.getUniqueId());
+				addCheatLog(log);
+			}
+		}, 3 * 20L);
 	}
 }

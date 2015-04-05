@@ -67,22 +67,7 @@ public class KillAura extends CheatTask {
             numberTouched++;
             if(numberTouched >= 3)
             {
-
-                AntiCheat.broadcastSamaritan("Quels sont vos ordres ?");
-                Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
-                    @Override
-                    public void run() {
-                        AntiCheat.broadcastGreer("Tu te trompes, mon cher Samaritain, quels sont tes ordres pour nous ?");
-                    }
-                }, 1 * 20L);
-                final KillAura killAura = this;
-                Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
-                    @Override
-                    public void run() {
-                        AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + killAura.getClass().getSimpleName());
-                        AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
-                    }
-                }, 3 * 20L);
+                AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
                 numberTouched = 0;
                 return;
             }
