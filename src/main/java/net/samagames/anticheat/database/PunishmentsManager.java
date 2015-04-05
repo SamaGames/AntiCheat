@@ -99,21 +99,25 @@ public class PunishmentsManager {
 	 * Bans the player and return the time of the ban
 	 * @param player The player to ban
 	 * @param reason The reason of the ban
-	 * @return The ban duration in seconds, or -1 for definitive ban
 	 */
-	public long automaticBan(Player player, String reason) {
+	public void automaticBan(Player player, String reason, BasicCheatLog log) {
 		Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
 		if (months > 6) {
 			manualDefBan(player, reason);
+			log.setBanTime("Définitif");
 		} else {
 			Calendar cal = Calendar.getInstance(); // creates calendar
 			cal.setTime(new Date()); // sets calendar time/date
 			cal.add(Calendar.MONTH, months);
-			manualTempBan(player, cal.getTime(), reason);
+			Date end = cal.getTime();
+			manualTempBan(player, end, reason);
+
+			long time = ((end.getTime() - new Date().getTime()) / 1000);
+			insertBan(player.getUniqueId(), reason, (int) time);
+			log.setBanTime(formatTime(time + 1));
 		}
 		increaseBanScore(player.getUniqueId());
-
-		return (months > 6) ? -1 : months * 2592000;
+		addCheatLog(log);
 	}
 
 	public static String formatTime(long time) {

@@ -30,6 +30,16 @@ public abstract class BasicCheatLog {
 	 * @param banTime The time the player were banned for the cheat (litteral time, "None" if the player was not banned)
 	 */
 	protected BasicCheatLog(Player player, String cheatName, String banTime) {
+		this(player, cheatName);
+		setBanTime(banTime);
+	}
+
+	/**
+	 * Default constructor for a cheat log
+	 * @param player The player who cheated
+	 * @param cheatName The name of the tracked cheat
+	 */
+	protected BasicCheatLog(Player player, String cheatName) {
 		this.server = MasterBundle.getServerName();
 		this.date = new Date();
 		this.playerID = player.getUniqueId();

@@ -69,9 +69,7 @@ public class KillAura extends CheatTask {
             if(numberTouched >= 3)
             {
                 AntiCheat.broadcast("Relevant number : " + player.getName() + "; Threat: " + this.getClass().getSimpleName());
-                long duration = AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura");
-                String humanDuration = PunishmentsManager.formatTime(duration);
-                AntiCheat.punishmentsManager.addCheatLog(new KillauraCheatLog(player, humanDuration, touched));
+                AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
                 numberTouched = 0;
                 return;
             }

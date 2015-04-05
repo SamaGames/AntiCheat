@@ -27,6 +27,16 @@ public class KillauraCheatLog extends BasicCheatLog {
 		this.targetsHits = targetsHits;
 	}
 
+	/**
+	 * Construct the cheatLog
+	 * @param player Player who cheated
+	 * @param targetsHits The hits <targetloc:playerloc>
+	 */
+	protected KillauraCheatLog(Player player, HashMap<VirtualLocation, VirtualLocation> targetsHits) {
+		super(player, "KillAura");
+		this.targetsHits = targetsHits;
+	}
+
 	protected KillauraCheatLog() {
 		super();
 	}
