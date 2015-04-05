@@ -24,7 +24,7 @@ import java.util.Random;
  */
 public class KillAura extends CheatTask {
 
-    public final long CHECK_INTERVAL = 1*10*1000;
+    public final long CHECK_INTERVAL = 2*60*1000;
     public final int CHECK_DURATION = 20;
     public EntityHuman target = null;
     public Location targetLocation = null;
@@ -60,30 +60,6 @@ public class KillAura extends CheatTask {
         countDown = CHECK_DURATION;
 
     }
-
-    /*public void onClick(PlayerInteractEvent event)
-    {
-        if(targetLocation == null || target == null)
-            return;
-
-        //Check si touche la target
-        boolean touch = isTargeting(player, targetLocation, 20, 1.05);
-
-        if(touch)
-        {
-            touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
-            destroyTarget();
-            numberTouched++;
-            if(numberTouched >= 7)
-            {
-                AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
-                numberTouched = 0;
-                return;
-            }
-            generateRandomTarget();
-            countDown = CHECK_DURATION;
-        }
-    }*/
 
     public void run()
     {
@@ -291,7 +267,7 @@ public class KillAura extends CheatTask {
                 loc.getY(),
                 loc.getZ());
         entityHuman.setSneaking(true);
-        //entityHuman.setInvisible(true);
+        entityHuman.setInvisible(true);
         return entityHuman;
     }
 
