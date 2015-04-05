@@ -40,7 +40,7 @@ public class ModerationTools {
         Jedis j = MasterBundle.getRedisBungee();
         String from = "Samaritan";
         String motif = "Le joueur " + toPseudo + " a été banni pour " + sanction.getMotif();
-        j.publish("redisbungee-allservers", "global#####"+from+"#####"+motif);
+        j.publish("cheat", from + "#####" + motif);
         j.close();
     }
 

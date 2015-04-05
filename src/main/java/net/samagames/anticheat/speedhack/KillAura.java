@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -32,9 +31,9 @@ public class KillAura extends CheatTask {
     public Location targetLocation = null;
     public int numberTouched = 0;
     public HashMap<VirtualLocation, VirtualLocation> touched = new HashMap<>();
-
     public long nextTest = System.currentTimeMillis();
     public int countDown = 0;
+    private int orientation = -1;
 
     public KillAura(final Player player) {
         super(player);
@@ -58,7 +57,7 @@ public class KillAura extends CheatTask {
             return;
 
         //Check si touche la target
-        boolean touch = isTargeting(player, targetLocation, 20, 1.3);
+        boolean touch = isTargeting(player, targetLocation, 20, 1.05);
 
         if(touch)
         {
@@ -136,7 +135,7 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        Location victimLocation = getRandomLocationAroundPlayer(player.getLocation(), 2);
+        Location victimLocation = getRandomLocationAroundPlayer(player.getLocation(), 3);
 
         final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
         target = entityHuman;
@@ -159,7 +158,7 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        Location victimLocation = getLocationBehondPlayer(player.getLocation(), 2);
+        Location victimLocation = getLocationBehondPlayer(player.getLocation(), 3);
 
 
         final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
@@ -203,8 +202,10 @@ public class KillAura extends CheatTask {
     public Location getRandomLocationAroundPlayer(Location referential, double radius)
     {
         Random random = new Random();
-        double finalYaw = Math.toRadians(random.nextInt(360));
-        double finalPitch = Math.toRadians(random.nextInt(360));
+        int location = orientation * 90;
+        orientation *= -1;
+        double finalYaw = Math.toRadians(random.nextInt(360) + location);
+        double finalPitch = Math.toRadians(random.nextInt(360 + location));
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeZ = Math.sin(finalPitch) * Math.sin(finalYaw) * radius;
