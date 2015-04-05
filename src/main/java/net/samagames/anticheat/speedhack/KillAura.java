@@ -8,7 +8,6 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
@@ -25,7 +24,7 @@ import java.util.Random;
  */
 public class KillAura extends CheatTask {
 
-    public final long CHECK_INTERVAL = 2*60*1000;
+    public final long CHECK_INTERVAL = 1*10*1000;
     public final int CHECK_DURATION = 20;
     public EntityHuman target = null;
     public Location targetLocation = null;
@@ -37,21 +36,32 @@ public class KillAura extends CheatTask {
 
     public KillAura(final Player player) {
         super(player);
-
-        /*Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
-            @Override
-            public void run() {
-                final EntityPlayer entityHuman = generatePlayer(player.getLocation(), new GameProfile(UUID.randomUUID(), "" + new Random().nextInt(9999999)));
-                sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.ADD_PLAYER, entityHuman));
-                sendPacket(player, generateSpawnPacket(entityHuman));
-                //sendPacket(player, generateMetaPacket(entityHuman));
-                sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.REMOVE_PLAYER, entityHuman));
-                //entityHuman.die();
-            }
-        }, 10L);*/
+        //AntiCheat.instance.protocol.injectPlayer(player);
     }
 
-    public void onClick(PlayerInteractEvent event)
+    public void onClick(int entityID)
+    {
+        if(targetLocation == null || target == null)
+            return;
+
+        if(target.getId() != entityID)
+            return;
+
+        touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
+        destroyTarget();
+        numberTouched++;
+        if(numberTouched >= 7)
+        {
+            AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
+            numberTouched = 0;
+            return;
+        }
+        generateRandomTarget();
+        countDown = CHECK_DURATION;
+
+    }
+
+    /*public void onClick(PlayerInteractEvent event)
     {
         if(targetLocation == null || target == null)
             return;
@@ -73,7 +83,7 @@ public class KillAura extends CheatTask {
             generateRandomTarget();
             countDown = CHECK_DURATION;
         }
-    }
+    }*/
 
     public void run()
     {
@@ -281,13 +291,14 @@ public class KillAura extends CheatTask {
                 loc.getY(),
                 loc.getZ());
         entityHuman.setSneaking(true);
-        entityHuman.setInvisible(true);
+        //entityHuman.setInvisible(true);
         return entityHuman;
     }
 
     public void sendPacket(Player p, Packet packet)
     {
-        ((CraftPlayer)p).getHandle().playerConnection.sendPacket(packet);
+        //AntiCheat.instance.protocol.sendPacket(player, packet);
+        ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet);
     }
 
     public Packet generateSpawnPacket(EntityHuman entityHuman)

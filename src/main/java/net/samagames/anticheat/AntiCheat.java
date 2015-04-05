@@ -1,8 +1,12 @@
 package net.samagames.anticheat;
 
 
+import io.netty.channel.Channel;
+import net.minecraft.server.v1_8_R1.EnumEntityUseAction;
+import net.minecraft.server.v1_8_R1.PacketPlayInUseEntity;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
+import net.samagames.anticheat.packets.TinyProtocol;
 import net.samagames.anticheat.speedhack.KillAura;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +34,8 @@ public class AntiCheat extends JavaPlugin implements Listener {
     public static HashSet<Class<? extends CheatTask>> cheats = new HashSet<>();
     public static AntiCheat instance;
     public static PunishmentsManager punishmentsManager;
+
+    public TinyProtocol protocol;
 
     public static void login(Player player) {
         ACPlayer acp = new ACPlayer(player);
@@ -80,6 +87,33 @@ public class AntiCheat extends JavaPlugin implements Listener {
         //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);
 
+        protocol = new TinyProtocol(this) {
+            @Override
+            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
+                if(packet instanceof PacketPlayInUseEntity)
+                {
+                    PacketPlayInUseEntity p = (PacketPlayInUseEntity)packet;
+                    if(p.a() == EnumEntityUseAction.ATTACK)
+                    {
+                        ACPlayer acp = getPlayer(sender.getUniqueId());
+                        int id = -1;
+                        try {
+                            Field a = p.getClass().getDeclaredField("a");
+                            a.setAccessible(true);
+                            id = (int) a.get(p);
+                        } catch (NoSuchFieldException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+
+                        ((KillAura)acp.getCheat("KillAura")).onClick(id);
+                    }
+                }
+
+                return super.onPacketInAsync(sender, channel, packet);
+            }
+        };
 
         Bukkit.getPluginManager().registerEvents(new NetworkListener(), this);
 

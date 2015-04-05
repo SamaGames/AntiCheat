@@ -2,7 +2,6 @@ package net.samagames.anticheat.globalListeners;
 
 import net.samagames.anticheat.ACPlayer;
 import net.samagames.anticheat.AntiCheat;
-import net.samagames.anticheat.speedhack.KillAura;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -46,10 +45,10 @@ public class NetworkListener implements Listener {
     @EventHandler
     public void onPlayerClick(PlayerInteractEvent event)
     {
-        ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
+       /* ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
         KillAura ka = (KillAura) acp.getCheat("KillAura");
 
-        ka.onClick(event);
+        ka.onClick(event);*/
     }
 
     @EventHandler
