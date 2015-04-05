@@ -4,7 +4,6 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -56,16 +55,15 @@ public class KillAura extends CheatTask {
             return;
 
         //Check si touche la target
-        boolean touch = isTargeting(player, targetLocation, 20, 1.5);
+        boolean touch = isTargeting(player, targetLocation, 20, 1.3);
 
         if(touch)
         {
-            AntiCheat.log("Touch");
             destroyTarget();
             numberTouched++;
-            if(numberTouched >= 5)
+            if(numberTouched >= 3)
             {
-                Bukkit.broadcastMessage("CHEAT WESH TU CHEAT");
+                AntiCheat.broadcast("Relevant number : " + player.getName() + "; Threat: " + this.getClass().getSimpleName());
                 numberTouched = 0;
                 return;
             }

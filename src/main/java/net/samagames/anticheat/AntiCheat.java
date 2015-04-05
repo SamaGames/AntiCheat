@@ -4,6 +4,7 @@ package net.samagames.anticheat;
 import net.samagames.anticheat.globalListeners.NetworkListener;
 import net.samagames.anticheat.speedhack.KillAura;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -58,6 +59,12 @@ public class AntiCheat extends JavaPlugin implements Listener {
         Bukkit.getLogger().log(level, phrase);
     }
 
+    public static void broadcast(String message)
+    {
+        String prefix = ChatColor.RED + "[" + ChatColor.GRAY + "Samaritain" + ChatColor.RED + "] ";
+        Bukkit.broadcastMessage(prefix + ChatColor.RED + message);
+    }
+
     public void onEnable() {
         instance = this;
 
@@ -69,10 +76,5 @@ public class AntiCheat extends JavaPlugin implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             login(player);
         }
-    }
-
-    public void broadcast(String message)
-    {
-
     }
 }
