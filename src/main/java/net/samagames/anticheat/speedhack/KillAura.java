@@ -65,7 +65,7 @@ public class KillAura extends CheatTask {
             touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
             destroyTarget();
             numberTouched++;
-            if(numberTouched >= 3)
+            if(numberTouched >= 5)
             {
                 AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
                 numberTouched = 0;
