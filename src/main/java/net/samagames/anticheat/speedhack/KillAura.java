@@ -63,8 +63,8 @@ public class KillAura extends CheatTask {
 
         if(touch)
         {
+            touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
             destroyTarget();
-            touched.put(new VirtualLocation(targetLocation), new VirtualLocation(player.getLocation()));
             numberTouched++;
             if(numberTouched >= 3)
             {

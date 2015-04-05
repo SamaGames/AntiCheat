@@ -11,9 +11,9 @@ import org.bukkit.Location;
  * All rights reserved.
  */
 public class VirtualLocation {
-	private int x;
-	private int y;
-	private int z;
+	private double x;
+	private double y;
+	private double z;
 	private String world;
 
 	public VirtualLocation() {
@@ -21,41 +21,38 @@ public class VirtualLocation {
 	}
 
 	public VirtualLocation(Location loc) {
-		setX(loc.getBlockX());
-		setY(loc.getBlockY());
-		setZ(loc.getBlockZ());
+		setX(loc.getX());
+		setY(loc.getY());
+		setZ(loc.getZ());
 		this.world = loc.getWorld().getName();
 	}
 
-	public void setX(int x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 
-	public void setY(int y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 
-	public void setZ(int z) {
+	public void setZ(double z) {
 		this.z = z;
 	}
 
-	public int getX() {
+	public double getX() {
 		return x;
 	}
 
-	public int getY() {
+	public double getY() {
 		return y;
 	}
 
-	public int getZ() {
+	public double getZ() {
 		return z;
 	}
 
-	public VirtualLocation(String string) {
-		String[] parts = string.split("/");
-		x = Integer.valueOf(parts[0]);
-		y = Integer.valueOf(parts[1]);
-		z = Integer.valueOf(parts[2]);
+	public String getWorld() {
+		return world;
 	}
 
 	@Override

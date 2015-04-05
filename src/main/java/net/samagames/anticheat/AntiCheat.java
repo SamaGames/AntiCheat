@@ -69,8 +69,11 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
     public void onEnable() {
         instance = this;
+
+        punishmentsManager = new PunishmentsManager();
         //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);
+
 
         Bukkit.getPluginManager().registerEvents(new NetworkListener(), this);
 
