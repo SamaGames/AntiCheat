@@ -5,6 +5,7 @@ import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import net.samagames.anticheat.database.PunishmentsManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -14,7 +15,6 @@ import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -68,7 +68,20 @@ public class KillAura extends CheatTask {
             numberTouched++;
             if(numberTouched >= 3)
             {
-                AntiCheat.broadcast("Relevant number : " + player.getName() + "; Threat: " + this.getClass().getSimpleName());
+                AntiCheat.broadcastSamaritan("Quels sont vos ordres ?");
+                Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
+                    @Override
+                    public void run() {
+                        AntiCheat.broadcastGreer("Tu te trompes, mon cher Samaritain, quels sont tes ordres ?");
+                    }
+                }, 2*20L);
+                Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
+                    @Override
+                    public void run() {
+                        AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + getClass().getSimpleName());
+                    }
+                }, 3*20L);
+                AntiCheat.broadcastSamaritan("Relevant number : " + player.getName() + "; Threat: " + this.getClass().getSimpleName());
                 long duration = AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura");
                 String humanDuration = PunishmentsManager.formatTime(duration);
                 AntiCheat.punishmentsManager.addCheatLog(new KillauraCheatLog(player, humanDuration, touched));

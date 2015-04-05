@@ -35,7 +35,7 @@ public class ModerationTools {
 
         message += ".";
 
-        modMessage("Samaritain", ChatColor.DARK_RED, message);
+        modMessage("Samaritan", ChatColor.DARK_RED, message);
     }
 
 	public static void sendModMessage(JsonModMessage message) {

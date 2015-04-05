@@ -3,8 +3,8 @@ package net.samagames.anticheat.database;
 import net.zyuiop.MasterBundle.FastJedis;
 import net.zyuiop.MasterBundle.MasterBundle;
 import org.apache.commons.lang3.StringUtils;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.craftbukkit.libs.com.google.gson.Gson;
-import org.bukkit.entity.Player;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ShardedJedis;
 
@@ -20,6 +20,32 @@ import java.util.UUID;
  * All rights reserved.
  */
 public class PunishmentsManager {
+	public static String formatTime(long time) {
+		int days = (int) time / (3600*24);
+		int remainder = (int) time - days * (3600*24);
+		int hours = remainder / 3600;
+		remainder = remainder - (hours * 3600);
+		int mins = remainder / 60;
+
+		String ret = "";
+		if (days > 0) {
+			ret+= days+" jours ";
+		}
+
+		if (hours > 0) {
+			ret += hours+" heures ";
+		}
+
+		if (mins > 0) {
+			ret += mins+" minutes ";
+		}
+
+		if (ret.equals("") && mins == 0)
+			ret += "moins d'une minute";
+
+		return ret;
+	}
+
 	/**
 	 * This method is synchronous. Be carefull, it's not instant !
 	 * @param log The log to append
@@ -49,7 +75,7 @@ public class PunishmentsManager {
 		jedis.close();
 	}
 
-	public void manualTempBan(Player player, Date end, String reason) {
+	public void manualTempBan(OfflinePlayer player, Date end, String reason) {
 		long time = ((end.getTime() - new Date().getTime()) / 1000);
 		insertBan(player.getUniqueId(), reason, (int) time);
 
@@ -57,7 +83,7 @@ public class PunishmentsManager {
 		dispatch("kick", player.getUniqueId().toString(), "Vous avez été banni " + timeStr + " : " + reason);
 
 		JsonCaseLine sanction = new JsonCaseLine();
-		sanction.setAddedBy("Samaritain");
+		sanction.setAddedBy("Samaritan");
 		sanction.setMotif(reason);
 		sanction.setType("Bannissement");
 		sanction.setDurationTime(time);
@@ -73,12 +99,12 @@ public class PunishmentsManager {
 		j.close();
 	}
 
-	public void manualDefBan(Player player, String reason) {
+	public void manualDefBan(OfflinePlayer player, String reason) {
 		insertBan(player.getUniqueId(), reason, null);
 		dispatch("kick", player.getUniqueId().toString(), "Vous avez été banni définitivement : " + reason);
 
 		JsonCaseLine sanction = new JsonCaseLine();
-		sanction.setAddedBy("Samaritain");
+		sanction.setAddedBy("Samaritan");
 		sanction.setMotif(reason);
 		sanction.setType("Bannissement");
 		sanction.setDurationTime(-1L);
@@ -101,7 +127,7 @@ public class PunishmentsManager {
 	 * @param reason The reason of the ban
 	 * @return The ban duration in seconds, or -1 for definitive ban
 	 */
-	public long automaticBan(Player player, String reason) {
+	public long automaticBan(OfflinePlayer player, String reason) {
 		Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
 		if (months > 6) {
 			manualDefBan(player, reason);
@@ -114,31 +140,5 @@ public class PunishmentsManager {
 		increaseBanScore(player.getUniqueId());
 
 		return (months > 6) ? -1 : months * 2592000;
-	}
-
-	public static String formatTime(long time) {
-		int days = (int) time / (3600*24);
-		int remainder = (int) time - days * (3600*24);
-		int hours = remainder / 3600;
-		remainder = remainder - (hours * 3600);
-		int mins = remainder / 60;
-
-		String ret = "";
-		if (days > 0) {
-			ret+= days+" jours ";
-		}
-
-		if (hours > 0) {
-			ret += hours+" heures ";
-		}
-
-		if (mins > 0) {
-			ret += mins+" minutes ";
-		}
-
-		if (ret.equals("") && mins == 0)
-			ret += "moins d'une minute";
-
-		return ret;
 	}
 }

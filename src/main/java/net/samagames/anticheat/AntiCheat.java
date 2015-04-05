@@ -61,9 +61,15 @@ public class AntiCheat extends JavaPlugin implements Listener {
         Bukkit.getLogger().log(level, phrase);
     }
 
-    public static void broadcast(String message)
+    public static void broadcastSamaritan(String message)
     {
-        String prefix = ChatColor.RED + "[" + ChatColor.GRAY + "Samaritain" + ChatColor.RED + "] ";
+        String prefix = ChatColor.RED + "[" + ChatColor.GRAY + "Samaritan" + ChatColor.RED + "] ";
+        Bukkit.broadcastMessage(prefix + ChatColor.RED + message);
+    }
+
+    public static void broadcastGreer(String message)
+    {
+        String prefix = ChatColor.RED + "[" + ChatColor.GRAY + "Greer" + ChatColor.RED + "] ";
         Bukkit.broadcastMessage(prefix + ChatColor.RED + message);
     }
 

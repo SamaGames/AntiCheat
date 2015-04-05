@@ -1,7 +1,7 @@
 package net.samagames.anticheat.speedhack;
 
 import net.samagames.anticheat.database.BasicCheatLog;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 import java.util.HashMap;
 
@@ -22,7 +22,7 @@ public class KillauraCheatLog extends BasicCheatLog {
 	 * @param banTime The time the player will get banned
 	 * @param targetsHits The hits <targetloc:playerloc>
 	 */
-	protected KillauraCheatLog(Player player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits) {
+	protected KillauraCheatLog(OfflinePlayer player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits) {
 		super(player, "KillAura", banTime);
 		this.targetsHits = targetsHits;
 	}
