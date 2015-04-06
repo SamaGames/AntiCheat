@@ -38,9 +38,7 @@ public class ModerationTools {
         modMessage("Samaritan", ChatColor.DARK_RED, message);
 
         Jedis j = MasterBundle.getRedisBungee();
-        String from = "Samaritan";
-        String motif = "Le joueur " + toPseudo + " a été banni pour " + sanction.getMotif();
-        j.publish("cheat", from + "#####" + sanction.getMotif());
+        j.publish("cheat", toPseudo + "#####" + sanction.getMotif());
         j.close();
     }
 
