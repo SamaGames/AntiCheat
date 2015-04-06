@@ -1,5 +1,6 @@
 package net.samagames.anticheat.database;
 
+import net.md_5.bungee.api.ChatColor;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.speedhack.KillauraCheatLog;
 import net.zyuiop.MasterBundle.FastJedis;
@@ -139,9 +140,10 @@ public class PunishmentsManager {
 			sanction.setAddedBy("Samaritain");
 			sanction.setMotif(reason);
 			sanction.setType("Avertissement");
-			sanction.setDurationTime(-1L);
+			sanction.setDurationTime(- 1L);
 
 			ModerationTools.addSanction(sanction, player.getUniqueId());
+			ModerationTools.modMessage("Samaritan", ChatColor.DARK_RED, "J'ai donné un avertissement à " + player.getName() + " pour " + reason);
 
 			return;
 		}
