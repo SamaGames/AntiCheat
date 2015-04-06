@@ -3,11 +3,14 @@ package net.samagames.anticheat;
 
 import io.netty.channel.Channel;
 import net.minecraft.server.v1_8_R1.EnumEntityUseAction;
+import net.minecraft.server.v1_8_R1.PacketPlayInEntityAction;
+import net.minecraft.server.v1_8_R1.PacketPlayInPosition;
 import net.minecraft.server.v1_8_R1.PacketPlayInUseEntity;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
 import net.samagames.anticheat.packets.TinyProtocol;
 import net.samagames.anticheat.speedhack.KillAura;
+import net.samagames.anticheat.speedhack.SpeedHack;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -86,16 +89,17 @@ public class AntiCheat extends JavaPlugin implements Listener {
         punishmentsManager = new PunishmentsManager();
         //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);
+        cheats.add(SpeedHack.class);
 
         protocol = new TinyProtocol(this) {
             @Override
             public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
+                ACPlayer acp = getPlayer(sender.getUniqueId());
                 if(packet instanceof PacketPlayInUseEntity)
                 {
                     PacketPlayInUseEntity p = (PacketPlayInUseEntity)packet;
                     if(p.a() == EnumEntityUseAction.ATTACK)
                     {
-                        ACPlayer acp = getPlayer(sender.getUniqueId());
                         int id = -1;
                         try {
                             Field a = p.getClass().getDeclaredField("a");
@@ -109,6 +113,20 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
                         ((KillAura)acp.getCheat("KillAura")).onClick(id);
                     }
+                }else if(packet instanceof PacketPlayInPosition)
+                {
+                    PacketPlayInPosition p = (PacketPlayInPosition)packet;
+                    ((SpeedHack)acp.getCheat("SpeedHack"))
+                            .updateLocation(
+                                    p.a(),
+                                    p.b(),
+                                    p.c());
+
+                }else if(packet instanceof PacketPlayInEntityAction)
+                {
+                    PacketPlayInEntityAction p = (PacketPlayInEntityAction)packet;
+
+                    ((SpeedHack)acp.getCheat("SpeedHack")).playerAction(p.b());
                 }
 
                 return super.onPacketInAsync(sender, channel, packet);
