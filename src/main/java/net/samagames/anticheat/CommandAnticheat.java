@@ -40,6 +40,7 @@ public class CommandAnticheat implements CommandExecutor {
 				ShardedJedis jedis = MasterBundle.jedis();
 				jedis.hset("banrules", cheat, String.valueOf(true));
 				jedis.close();
+				AntiCheat.banRules.setValue(cheat, true);
 
 				commandSender.sendMessage(ChatColor.GREEN + "Ce cheat provoque désormais un bannissement.");
 			});
@@ -49,6 +50,7 @@ public class CommandAnticheat implements CommandExecutor {
 				ShardedJedis jedis = MasterBundle.jedis();
 				jedis.hset("banrules", cheat, String.valueOf(false));
 				jedis.close();
+				AntiCheat.banRules.setValue(cheat, false);
 
 				commandSender.sendMessage(ChatColor.GREEN + "Ce cheat ne provoque désormais plus de bannissements.");
 			});

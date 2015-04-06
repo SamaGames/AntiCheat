@@ -23,6 +23,10 @@ public class BanRules {
 		Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refreshRules, 0L, 20*300L);
 	}
 
+	public void setValue(String key, Boolean value) {
+		mustBan.put(key, value);
+	}
+
 	public HashMap<String, Boolean> getRules() {
 		return mustBan;
 	}
