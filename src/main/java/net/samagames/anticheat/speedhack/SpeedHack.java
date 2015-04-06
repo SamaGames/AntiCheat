@@ -1,12 +1,12 @@
 package net.samagames.anticheat.speedhack;
 
+import net.minecraft.server.v1_8_R1.EnumPlayerAction;
 import net.samagames.anticheat.ACPlayer;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -45,6 +45,11 @@ public class SpeedHack extends CheatTask {
     public int ping = 0;
     public int need_Check = 0;
     public int noMove = 0;
+
+
+    public Location lastLocation = player.getLocation();
+    public long lastLocationTime = System.currentTimeMillis();
+
     /** Main loop **/
     protected Location currentLocation;
     protected Location previousLocation;
@@ -75,10 +80,33 @@ public class SpeedHack extends CheatTask {
 
     }
 
+    public void playerAction(EnumPlayerAction action)
+    {
+        AntiCheat.log("[M] " + player.getName() + " Action: " + ANSI_RED + action.toString() + ANSI_RESET);
+    }
+
+    public void updateLocation(double x, double y, double z)
+    {
+        long time = System.currentTimeMillis();
+        Location newLocation = new Location(player.getWorld(), x,y,z);
+
+        double distance = getDistance(lastLocation, newLocation);
+
+        double speed = distance / (time - lastLocationTime);
+
+        speed *= 1000.0;
+
+        lastLocationTime = time;
+        lastLocation = newLocation;
+
+        AntiCheat.log("[M] " + player.getName() + " ISPEED: " + ANSI_RED + speed + ANSI_RESET);
+
+    }
+
     @Override
     public void run() {
         super.run();
-
+/*
         currentLocation = player.getLocation().clone();
 
         int diffPing = ping - ((CraftPlayer)player).getHandle().ping;

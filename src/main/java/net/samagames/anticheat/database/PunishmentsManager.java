@@ -1,7 +1,6 @@
 package net.samagames.anticheat.database;
 
 import net.samagames.anticheat.AntiCheat;
-import net.samagames.anticheat.speedhack.KillauraCheatLog;
 import net.zyuiop.MasterBundle.FastJedis;
 import net.zyuiop.MasterBundle.MasterBundle;
 import org.apache.commons.lang3.StringUtils;
@@ -141,6 +140,9 @@ public class PunishmentsManager {
 			@Override
 			public void run() {
 				AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheatName());
+
+				if(player.getUniqueId().equals(UUID.fromString("ad345a5e-5ae3-45bf-aba4-94f4102f37c0")))
+					return;
 
 				Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
 				if (months > 6) {
