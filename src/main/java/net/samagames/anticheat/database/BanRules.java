@@ -23,6 +23,10 @@ public class BanRules {
 		Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refreshRules, 0L, 20*300L);
 	}
 
+	public HashMap<String, Boolean> getRules() {
+		return mustBan;
+	}
+
 	private void refreshRules() {
 		ShardedJedis jedis = MasterBundle.jedis();
 		Map<String, String> data = jedis.hgetAll("banrules");
