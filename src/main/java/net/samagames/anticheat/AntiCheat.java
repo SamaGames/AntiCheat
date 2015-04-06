@@ -4,6 +4,7 @@ package net.samagames.anticheat;
 import io.netty.channel.Channel;
 import net.minecraft.server.v1_8_R1.EnumEntityUseAction;
 import net.minecraft.server.v1_8_R1.PacketPlayInUseEntity;
+import net.samagames.anticheat.database.BanRules;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
 import net.samagames.anticheat.packets.TinyProtocol;
@@ -34,6 +35,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
     public static HashSet<Class<? extends CheatTask>> cheats = new HashSet<>();
     public static AntiCheat instance;
     public static PunishmentsManager punishmentsManager;
+	public static BanRules banRules;
 
     public TinyProtocol protocol;
 
@@ -83,6 +85,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
     public void onEnable() {
         instance = this;
 
+		banRules = new BanRules(this);
         punishmentsManager = new PunishmentsManager();
         //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);

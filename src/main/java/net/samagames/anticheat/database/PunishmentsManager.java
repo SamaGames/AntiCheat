@@ -130,6 +130,23 @@ public class PunishmentsManager {
 	 * @param reason The reason of the ban
 	 */
 	public void automaticBan(final OfflinePlayer player, final String reason, final BasicCheatLog log) {
+		boolean ban = AntiCheat.banRules.mustBan(log.getCheatName());
+		if (!ban) {
+			log.setBanTime("None");
+			addCheatLog(log);
+
+			JsonCaseLine sanction = new JsonCaseLine();
+			sanction.setAddedBy("Samaritain");
+			sanction.setMotif(reason);
+			sanction.setType("Avertissement");
+			sanction.setDurationTime(-1L);
+
+			ModerationTools.addSanction(sanction, player.getUniqueId());
+
+			return;
+		}
+
+
 		AntiCheat.broadcastSamaritan("Quels sont vos ordres ?");
 		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
 			@Override
