@@ -4,3 +4,6 @@ version: 1.0.0
 authors: [zyuiop, Geekpower14]
 website: http://samagames.net/
 depend: [MasterBundle]
+commands:
+   anticheat:
+      description: Main anticheat commands
