@@ -90,6 +90,9 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
 		banRules = new BanRules(this);
         punishmentsManager = new PunishmentsManager();
+
+        Bukkit.getPluginCommand("anticheat").setExecutor(new CommandAnticheat());
+
         //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);
         cheats.add(SpeedHack.class);
