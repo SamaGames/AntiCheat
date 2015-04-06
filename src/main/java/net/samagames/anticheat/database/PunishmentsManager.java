@@ -1,5 +1,6 @@
 package net.samagames.anticheat.database;
 
+import net.md_5.bungee.api.ChatColor;
 import net.samagames.anticheat.AntiCheat;
 import net.zyuiop.MasterBundle.FastJedis;
 import net.zyuiop.MasterBundle.MasterBundle;
@@ -138,47 +139,37 @@ public class PunishmentsManager {
 			sanction.setAddedBy("Samaritain");
 			sanction.setMotif(reason);
 			sanction.setType("Avertissement");
-			sanction.setDurationTime(-1L);
+			sanction.setDurationTime(- 1L);
 
 			ModerationTools.addSanction(sanction, player.getUniqueId());
+			ModerationTools.modMessage("Samaritan", ChatColor.DARK_RED, "J'ai donné un avertissement à " + player.getName() + " pour " + reason);
 
 			return;
 		}
 
 
 		AntiCheat.broadcastSamaritan("Quels sont vos ordres ?");
-		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
-			@Override
-			public void run() {
-				AntiCheat.broadcastGreer("Tu te trompes, mon cher Samaritain, quels sont tes ordres pour nous ?");
+		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, () -> AntiCheat.broadcastGreer("Tu te trompes, mon cher Samaritain, quels sont tes ordres pour nous ?"), 20L);
+		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, () -> {
+			AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheatName());
+
+			Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
+			if (months > 6) {
+				manualDefBan(player, reason);
+				log.setBanTime("Définitif");
+			} else {
+				Calendar cal = Calendar.getInstance(); // creates calendar
+				cal.setTime(new Date()); // sets calendar time/date
+				cal.add(Calendar.MONTH, months);
+				Date end = cal.getTime();
+				manualTempBan(player, end, reason);
+
+				long time = ((end.getTime() - new Date().getTime()) / 1000);
+				insertBan(player.getUniqueId(), reason, (int) time);
+				log.setBanTime(formatTime(time + 1));
 			}
-		}, 20L);
-		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, new Runnable() {
-			@Override
-			public void run() {
-				AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheatName());
-
-				if(player.getUniqueId().equals(UUID.fromString("ad345a5e-5ae3-45bf-aba4-94f4102f37c0")))
-					return;
-
-				Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
-				if (months > 6) {
-					manualDefBan(player, reason);
-					log.setBanTime("Définitif");
-				} else {
-					Calendar cal = Calendar.getInstance(); // creates calendar
-					cal.setTime(new Date()); // sets calendar time/date
-					cal.add(Calendar.MONTH, months);
-					Date end = cal.getTime();
-					manualTempBan(player, end, reason);
-
-					long time = ((end.getTime() - new Date().getTime()) / 1000);
-					insertBan(player.getUniqueId(), reason, (int) time);
-					log.setBanTime(formatTime(time + 1));
-				}
-				increaseBanScore(player.getUniqueId());
-				addCheatLog(log);
-			}
+			increaseBanScore(player.getUniqueId());
+			addCheatLog(log);
 		}, 3 * 20L);
 	}
 }
