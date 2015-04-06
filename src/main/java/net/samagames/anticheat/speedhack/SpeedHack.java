@@ -1,15 +1,19 @@
 package net.samagames.anticheat.speedhack;
 
+import net.minecraft.server.v1_8_R1.BlockPosition;
 import net.minecraft.server.v1_8_R1.EnumPlayerAction;
-import net.samagames.anticheat.ACPlayer;
+import net.minecraft.server.v1_8_R1.WorldServer;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 /**
  * This file is a part of the SamaGames Project CodeBase
@@ -31,25 +35,35 @@ public class SpeedHack extends CheatTask {
     public static final String ANSI_PURPLE = "\u001B[35m";
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
+
+
     /*** Constantes ***/
     public double NORMAL_SPEED = 4.317;     // m/s
     public double SNEAK_SPEED = 1.310;       // m/s
     public double SPRINT_SPEED = 5.612;     // m/s
-    public double SMOOTH_COEFF = 120.0/50.0;
+    public double SMOOTH_COEFF = 500.0/50.0;
     public int CHECK_LOOP = 25;
-    public double ERROR_ = 2.1D;
+    public double ERROR_ = 1.5D;
+
     /*** Variables ***/
 
-    public double vitesseAmortie = 0.0;
+    public boolean need_Check = true;
 
-    public int ping = 0;
-    public int need_Check = 0;
-    public int noMove = 0;
-
+    public boolean sneak = player.isSneaking();
+    public boolean sprint = player.isSprinting();
 
     public Location lastLocation = player.getLocation();
     public long lastLocationTime = System.currentTimeMillis();
 
+    public long startTime = System.currentTimeMillis();
+
+    public double velocityDistance = 0.0;
+
+    public double sommeDistance = 0;
+    public double sommeTemps = 0;
+
+    public double virtualSpeed = 0.0; // m/s
+    public double realSpeed = 0.0;
     /** Main loop **/
     protected Location currentLocation;
     protected Location previousLocation;
@@ -57,12 +71,6 @@ public class SpeedHack extends CheatTask {
     protected Location ccurrentLocation;
     protected Location cpreviousLocation;
     protected int level = 0;
-
-    /*protected File f;
-    protected FileWriter fw;
-    protected long timeStarted = System.currentTimeMillis();*/
-
-    protected double virtualSpeed = 0.0; // m/s
 
     public SpeedHack(Player player) {
         super(player);
@@ -83,6 +91,31 @@ public class SpeedHack extends CheatTask {
     public void playerAction(EnumPlayerAction action)
     {
         AntiCheat.log("[M] " + player.getName() + " Action: " + ANSI_RED + action.toString() + ANSI_RESET);
+        if(action.equals(EnumPlayerAction.START_SNEAKING))
+        {
+            sneak = true;
+            return;
+        }
+        if(action.equals(EnumPlayerAction.STOP_SNEAKING))
+        {
+            sneak = false;
+            return;
+        }
+        if(action.equals(EnumPlayerAction.START_SPRINTING))
+        {
+            sprint = true;
+            return;
+        }
+        if(action.equals(EnumPlayerAction.STOP_SPRINTING))
+        {
+            sprint = false;
+            return;
+        }
+    }
+
+    public void updateVelocity(Vector vector)
+    {
+        velocityDistance = getHDistanceVector(vector)*1000.0;
     }
 
     public void updateLocation(double x, double y, double z)
@@ -90,22 +123,67 @@ public class SpeedHack extends CheatTask {
         long time = System.currentTimeMillis();
         Location newLocation = new Location(player.getWorld(), x,y,z);
 
-        double distance = getDistance(lastLocation, newLocation);
+        double distance = getHDistance(lastLocation, newLocation);
 
-        double speed = distance / (time - lastLocationTime);
+        sommeDistance += distance;
+        //AntiCheat.log("[S] " + player.getName() + " D: " + ANSI_YELLOW + sommeDistance + ANSI_RESET);
 
-        speed *= 1000.0;
+        double diffTime = (time - lastLocationTime);
+
+        sommeTemps += diffTime;
+        //AntiCheat.log("[S] " + player.getName() + " T: " + ANSI_YELLOW + sommeTemps + ANSI_RESET);
 
         lastLocationTime = time;
         lastLocation = newLocation;
 
-        AntiCheat.log("[M] " + player.getName() + " ISPEED: " + ANSI_RED + speed + ANSI_RESET);
+        AntiCheat.log("[S] " + player.getName() + " FRICTION: " + ANSI_CYAN + getSurfaceFriction() + ANSI_RESET);
 
+        if(System.currentTimeMillis() >= startTime + 1000)
+        {
+            double speed = sommeDistance / sommeTemps;
+
+            speed *= 1000.0;
+
+            realSpeed = speed - velocityDistance;
+            AntiCheat.log("[S] " + player.getName() + " ISPEED: " + ANSI_RED + speed + ANSI_RESET);
+            AntiCheat.log("[S] " + player.getName() + " VSPEED: " + ANSI_RED + virtualSpeed + ANSI_RESET);
+            //AntiCheat.log("[S] " + player.getName() + " VELOCITY: " + ANSI_RED + player.getVelocity().toString() + ANSI_RESET);
+            //AntiCheat.log("[S] " + player.getName() + " DISTANCE: " + ANSI_YELLOW + distance + ANSI_RESET);
+            //AntiCheat.log("[S] " + player.getName() + " DTIME: " + ANSI_CYAN + diffTime + ANSI_RESET);
+            AntiCheat.log("[S] " + player.getName() + " PING: " + ANSI_GREEN + AntiCheat.getPlayer(player.getUniqueId()).getPing() + ANSI_RESET);
+
+            startTime = System.currentTimeMillis();
+
+            sommeTemps = 0;
+            sommeDistance = 0;
+
+            need_Check = true;
+        }
     }
 
     @Override
     public void run() {
         super.run();
+
+        if(sneak)
+        {
+            calculSneak();
+        }else if(sprint)
+        {
+            calculSprint();
+        }else
+        {
+            calculNormal();
+        }
+
+        virtualSpeed += velocityDistance;
+
+        if(need_Check)
+        {
+            check();
+            need_Check = false;
+        }
+
 /*
         currentLocation = player.getLocation().clone();
 
@@ -137,7 +215,7 @@ public class SpeedHack extends CheatTask {
 
 
 
-        double distance = getDistance(previousLocation, currentLocation)/(1-(Math.abs(diffPing*0.4)));
+        double distance = getHDistance(previousLocation, currentLocation)/(1-(Math.abs(diffPing*0.4)));
 
         acp.walkedDistance += distance;
 
@@ -173,18 +251,7 @@ public class SpeedHack extends CheatTask {
 
     public void check()// Executé toute les 15 ticks
     {
-        ACPlayer acp = AntiCheat.getPlayer(player.getUniqueId());
-
-        ccurrentLocation = player.getLocation().clone();
-
-        double vitesse = (acp.walkedDistance*20.0) / ((need_Check)+1);
-        //double vitesse = vitesseAmortie*1000;
-
-        AntiCheat.log("[M] " + player.getName() + " VSPEED: " + ANSI_RED + virtualSpeed + ANSI_RESET + " RSPEED: " + ANSI_RED +  (vitesse) + ANSI_RESET);
-
-        findSpeedHack(vitesse);
-
-        cpreviousLocation = currentLocation.clone();
+        findSpeedHack(realSpeed);
     }
 
     public double getMaxDistancePerTick() {
@@ -209,9 +276,9 @@ public class SpeedHack extends CheatTask {
         double perMilliSecond = maxPerSecond / 1000.0;
         int ping = AntiCheat.getPlayer(player.getUniqueId()).getPing();
 
-        AntiCheat.log("ping = "+ANSI_GREEN +ping+ ANSI_RESET + ", max = "+perMilliSecond * (20 + ping) +" // PerSec : "+maxPerSecond);
+        AntiCheat.log("ping = " + ANSI_GREEN + ping + ANSI_RESET + ", max = " + perMilliSecond * (20 + ping) + " // PerSec : " + maxPerSecond);
 
-        return maxPerSecond + ((ping+60)/ 1000.0);
+        return maxPerSecond;
     }
 
     public void findSpeedHack(double distance) {
@@ -242,14 +309,14 @@ public class SpeedHack extends CheatTask {
         }
     }
 
-    public void calculSneak(long startedTime)
+    public void calculSneak()
     {
-        long time = System.currentTimeMillis() - startedTime;
+        //long time = System.currentTimeMillis() - startedTime;
 
         //AntiCheat.log("Sneak_");
 
         //virtualSpeed += ((SNEAK_SPEED - virtualSpeed)*(SNEAK_SPEED - virtualSpeed))/SMOOTH_COEFF;
-        virtualSpeed += ((SNEAK_SPEED - virtualSpeed))/(SMOOTH_COEFF+(120.0/20.0));
+        virtualSpeed += ((SNEAK_SPEED - virtualSpeed))/SMOOTH_COEFF;
         if(virtualSpeed < SNEAK_SPEED)
         {
             virtualSpeed = SNEAK_SPEED - 0.0001;
@@ -257,9 +324,9 @@ public class SpeedHack extends CheatTask {
 
     }
 
-    public void calculSprint(long startedTime)
+    public void calculSprint()
     {
-        long time = System.currentTimeMillis() - startedTime;
+        //long time = System.currentTimeMillis() - startedTime;
 
         //AntiCheat.log("Sprint-");
 
@@ -302,12 +369,32 @@ public class SpeedHack extends CheatTask {
         return from.getX() != from.getX() || from.getY() != from.getY() || from.getZ() != to.getZ();
     }
 
-    public double getDistance(final Location from, final Location to) { //  m
+    public double getHDistanceVector(Vector vector)
+    {
+        return Math.sqrt((vector.getX() * vector.getX()) + (vector.getZ() * vector.getZ()));
+    }
+
+    public double getHDistance(final Location from, final Location to) { //  m
         double XDiff = from.getX() - to.getX();
         double ZDiff = from.getZ() - to.getZ();
-        double YDiff = from.getY() - to.getY();
+        return Math.sqrt((XDiff * XDiff) + (ZDiff*ZDiff));
+    }
 
-        YDiff = 0.0; //On s'en fou pour l'instant
-        return Math.sqrt((XDiff * XDiff) + (ZDiff*ZDiff) + (YDiff*YDiff));
+    public double getVDistance(final Location from, final Location to) { //  m
+        double YDiff = from.getY() - to.getY();
+        return Math.abs(YDiff);
+    }
+
+    public float getSurfaceFriction()
+    {
+        float f2 = 1.0F;
+
+        if (((CraftPlayer)player).isOnGround())
+        {
+            WorldServer w = ((CraftWorld)player.getWorld()).getHandle();
+            f2 = 1.0F - w.c(new BlockPosition(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ())).I;
+        }
+
+        return f2;
     }
 }

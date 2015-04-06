@@ -94,7 +94,13 @@ public class AntiCheat extends JavaPlugin implements Listener {
         protocol = new TinyProtocol(this) {
             @Override
             public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
+                if(sender == null)
+                    return super.onPacketInAsync(sender, channel, packet);
                 ACPlayer acp = getPlayer(sender.getUniqueId());
+                if(acp == null)
+                    if(sender == null)
+                        return super.onPacketInAsync(sender, channel, packet);
+
                 if(packet instanceof PacketPlayInUseEntity)
                 {
                     PacketPlayInUseEntity p = (PacketPlayInUseEntity)packet;
@@ -116,7 +122,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
                 }else if(packet instanceof PacketPlayInPosition)
                 {
                     PacketPlayInPosition p = (PacketPlayInPosition)packet;
-                    ((SpeedHack)acp.getCheat("SpeedHack"))
+                    ((SpeedHack) acp.getCheat("SpeedHack"))
                             .updateLocation(
                                     p.a(),
                                     p.b(),
@@ -138,5 +144,10 @@ public class AntiCheat extends JavaPlugin implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             login(player);
         }
+    }
+
+    public void onDisable()
+    {
+        //protocol.close();
     }
 }

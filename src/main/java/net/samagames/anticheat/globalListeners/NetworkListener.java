@@ -2,6 +2,7 @@ package net.samagames.anticheat.globalListeners;
 
 import net.samagames.anticheat.ACPlayer;
 import net.samagames.anticheat.AntiCheat;
+import net.samagames.anticheat.speedhack.SpeedHack;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -31,6 +32,15 @@ public class NetworkListener implements Listener {
         AntiCheat.logout(event.getPlayer());
     }
 
+    @EventHandler
+    public void onVeloctiyChange(PlayerVelocityEvent event)
+    {
+        ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
+        SpeedHack speedHack = (SpeedHack) acp.getCheat("SpeedHack");
+        speedHack.updateVelocity(event.getVelocity());
+
+    }
+
     /*@EventHandler
     public void onPlayerMove(PlayerMoveEvent event)
     {
@@ -38,7 +48,7 @@ public class NetworkListener implements Listener {
             return;
 
         ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
-        double distance = getDistance(event.getFrom(), event.getTo());
+        double distance = getHDistance(event.getFrom(), event.getTo());
         acp.walkedDistance += distance;
     }*/
 
