@@ -52,6 +52,11 @@ public class CommandAnticheat implements CommandExecutor {
 
 				commandSender.sendMessage(ChatColor.GREEN + "Ce cheat ne provoque désormais plus de bannissements.");
 			});
+		} else if (com.equals("list")) {
+			commandSender.sendMessage(ChatColor.GOLD + "========[Liste des règles de bannissement]========");
+			for (Map.Entry<String, Boolean> rule : AntiCheat.banRules.getRules().entrySet()) {
+				commandSender.sendMessage(ChatColor.GOLD + " - " + (rule.getValue() ? ChatColor.GREEN + "(Bannit)" : ChatColor.RED + "(Ne bannit pas)" ) + " " + rule.getKey());
+			}
 		}
 		return true;
 	}
