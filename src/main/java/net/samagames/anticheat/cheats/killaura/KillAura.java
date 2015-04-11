@@ -1,9 +1,10 @@
-package net.samagames.anticheat.speedhack;
+package net.samagames.anticheat.cheats.killaura;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
+import net.samagames.anticheat.cheats.speedhack.VirtualLocation;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -25,7 +26,7 @@ import java.util.Random;
 public class KillAura extends CheatTask {
 
     public final long CHECK_INTERVAL = 2*60*1000;
-    public final int CHECK_DURATION = 20;
+    public final int CHECK_DURATION = 25;
     public EntityHuman target = null;
     public Location targetLocation = null;
     public int numberTouched = 0;
@@ -121,7 +122,7 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        Location victimLocation = getRandomLocationAroundPlayer(player.getLocation(), 3);
+        Location victimLocation = getRandomLocationAroundPlayer(player.getLocation(), 2);
 
         final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
         target = entityHuman;
@@ -144,7 +145,7 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        Location victimLocation = getLocationBehondPlayer(player.getLocation(), 3);
+        Location victimLocation = getLocationBehondPlayer(player.getLocation(), 2);
 
 
         final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
@@ -190,7 +191,7 @@ public class KillAura extends CheatTask {
         Random random = new Random();
         int location = orientation * 90;
         orientation *= -1;
-        double finalYaw = Math.toRadians(random.nextInt(360) + location);
+        double finalYaw = Math.toRadians(random.nextInt(360 + location));
         double finalPitch = Math.toRadians(random.nextInt(360 + location));
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;

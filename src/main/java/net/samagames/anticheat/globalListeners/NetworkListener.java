@@ -2,7 +2,7 @@ package net.samagames.anticheat.globalListeners;
 
 import net.samagames.anticheat.ACPlayer;
 import net.samagames.anticheat.AntiCheat;
-import net.samagames.anticheat.speedhack.SpeedHack;
+import net.samagames.anticheat.cheats.speedhack.SpeedHack;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,7 +11,7 @@ import org.bukkit.event.player.*;
 /**
  * This file is a part of the SamaGames Project CodeBase
  * This code is absolutely confidential.
- * Created by {USER}
+ * Created by Geekpower14
  * (C) Copyright Elydra Network 2014 & 2015
  * All rights reserved.
  */
@@ -37,6 +37,9 @@ public class NetworkListener implements Listener {
     {
         ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
         SpeedHack speedHack = (SpeedHack) acp.getCheat("SpeedHack");
+        if(speedHack == null)
+            return;
+
         speedHack.updateVelocity(event.getVelocity());
 
     }

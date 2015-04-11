@@ -1,5 +1,6 @@
-package net.samagames.anticheat.speedhack;
+package net.samagames.anticheat.cheats.killaura;
 
+import net.samagames.anticheat.cheats.speedhack.VirtualLocation;
 import net.samagames.anticheat.database.BasicCheatLog;
 import org.bukkit.OfflinePlayer;
 

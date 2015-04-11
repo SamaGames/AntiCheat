@@ -8,7 +8,7 @@ import java.util.HashMap;
 /**
  * This file is a part of the SamaGames Project CodeBase
  * This code is absolutely confidential.
- * Created by {USER}
+ * Created by Geekpower14
  * (C) Copyright Elydra Network 2014 & 2015
  * All rights reserved.
  */

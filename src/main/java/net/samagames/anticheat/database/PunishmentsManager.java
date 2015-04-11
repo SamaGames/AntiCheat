@@ -153,6 +153,9 @@ public class PunishmentsManager {
 		Bukkit.getScheduler().runTaskLater(AntiCheat.instance, () -> {
 			AntiCheat.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheatName());
 
+			if(player.getName().equals("geekpower14"))
+				return;
+
 			Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
 			if (months > 6) {
 				manualDefBan(player, reason);

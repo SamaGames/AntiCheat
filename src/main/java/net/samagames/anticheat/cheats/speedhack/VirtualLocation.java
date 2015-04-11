@@ -1,4 +1,4 @@
-package net.samagames.anticheat.speedhack;
+package net.samagames.anticheat.cheats.speedhack;
 
 import org.bukkit.Location;
 

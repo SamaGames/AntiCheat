@@ -1,4 +1,4 @@
-package net.samagames.anticheat.speedhack;
+package net.samagames.anticheat.cheats.speedhack;
 
 import net.minecraft.server.v1_8_R1.BlockPosition;
 import net.minecraft.server.v1_8_R1.EnumPlayerAction;
@@ -18,7 +18,7 @@ import org.bukkit.util.Vector;
 /**
  * This file is a part of the SamaGames Project CodeBase
  * This code is absolutely confidential.
- * Created by {USER}
+ * Created by Geekpower14
  * (C) Copyright Elydra Network 2014 & 2015
  * All rights reserved.
  */
@@ -392,7 +392,7 @@ public class SpeedHack extends CheatTask {
         if (((CraftPlayer)player).isOnGround())
         {
             WorldServer w = ((CraftWorld)player.getWorld()).getHandle();
-            f2 = 1.0F - w.c(new BlockPosition(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ())).I;
+            f2 = 1.0F - w.c(new BlockPosition(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ())).frictionFactor;
         }
 
         return f2;

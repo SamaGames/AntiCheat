@@ -6,12 +6,12 @@ import net.minecraft.server.v1_8_R1.EnumEntityUseAction;
 import net.minecraft.server.v1_8_R1.PacketPlayInEntityAction;
 import net.minecraft.server.v1_8_R1.PacketPlayInPosition;
 import net.minecraft.server.v1_8_R1.PacketPlayInUseEntity;
+import net.samagames.anticheat.cheats.killaura.KillAura;
+import net.samagames.anticheat.cheats.speedhack.SpeedHack;
 import net.samagames.anticheat.database.BanRules;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
 import net.samagames.anticheat.packets.TinyProtocol;
-import net.samagames.anticheat.speedhack.KillAura;
-import net.samagames.anticheat.speedhack.SpeedHack;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -54,7 +54,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
         }
         acplayers.put(player.getUniqueId(), acp);
 
-        log("Added "+ player.getName());
+        log("Added " + player.getName());
     }
 
     public static void logout(Player player) {
@@ -93,7 +93,6 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
         Bukkit.getPluginCommand("anticheat").setExecutor(new CommandAnticheat());
 
-        //cheats.add(SpeedHack.class);
         cheats.add(KillAura.class);
         cheats.add(SpeedHack.class);
 
@@ -123,22 +122,32 @@ public class AntiCheat extends JavaPlugin implements Listener {
                             e.printStackTrace();
                         }
 
-                        ((KillAura)acp.getCheat("KillAura")).onClick(id);
+                        KillAura killAura = ((KillAura) acp.getCheat("KillAura"));
+                        if(killAura != null)
+                        {
+                            killAura.onClick(id);
+                        }
                     }
                 }else if(packet instanceof PacketPlayInPosition)
                 {
                     PacketPlayInPosition p = (PacketPlayInPosition)packet;
-                    ((SpeedHack) acp.getCheat("SpeedHack"))
-                            .updateLocation(
-                                    p.a(),
-                                    p.b(),
-                                    p.c());
-
+                    SpeedHack speedHack = ((SpeedHack) acp.getCheat("SpeedHack"));
+                    if(speedHack != null)
+                    {
+                        speedHack.updateLocation(
+                                p.a(),
+                                p.b(),
+                                p.c());
+                    }
                 }else if(packet instanceof PacketPlayInEntityAction)
                 {
                     PacketPlayInEntityAction p = (PacketPlayInEntityAction)packet;
 
-                    ((SpeedHack)acp.getCheat("SpeedHack")).playerAction(p.b());
+                    SpeedHack speedHack = ((SpeedHack) acp.getCheat("SpeedHack"));
+                    if(speedHack != null)
+                    {
+                        speedHack.playerAction(p.b());
+                    }
                 }
 
                 return super.onPacketInAsync(sender, channel, packet);
@@ -147,9 +156,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
         Bukkit.getPluginManager().registerEvents(new NetworkListener(), this);
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            login(player);
-        }
+        Bukkit.getOnlinePlayers().forEach(net.samagames.anticheat.AntiCheat::login);
     }
 
     public void onDisable()
