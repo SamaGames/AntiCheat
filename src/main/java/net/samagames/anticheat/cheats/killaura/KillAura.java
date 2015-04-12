@@ -4,17 +4,15 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
-import net.samagames.anticheat.cheats.speedhack.VirtualLocation;
+import net.samagames.anticheat.cheats.VirtualLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * This file is a part of the SamaGames Project CodeBase
@@ -25,19 +23,37 @@ import java.util.Random;
  */
 public class KillAura extends CheatTask {
 
-    public final long CHECK_INTERVAL = 2*60*1000;
-    public final int CHECK_DURATION = 25;
+    public final long CHECK_INTERVAL = 1*30*1000;
+    public final int CHECK_DURATION = 15; //En tick
+    public final double POURCENTAGE_FOR_BAN = 1/2;
+
+    public final int CHECK_TO_DISPLAY = 10;
+
+    public boolean activeCheck = true;
+
     public EntityHuman target = null;
     public Location targetLocation = null;
+    public boolean isTouched = false;
+
     public int numberTouched = 0;
+    public int numberDisplayed = 1;
     public HashMap<VirtualLocation, VirtualLocation> touched = new HashMap<>();
+
     public long nextTest = System.currentTimeMillis();
     public int countDown = 0;
-    private int orientation = -1;
+
+    public List<Integer> angles = new ArrayList<>();
 
     public KillAura(final Player player) {
-        super(player);
-        //AntiCheat.instance.protocol.injectPlayer(player);
+        super(player, true);
+
+        angles.add(0);
+        angles.add(90);
+        angles.add(180);
+        angles.add(270);
+
+
+        //TODO: Appel execution
     }
 
     public void onClick(int entityID)
@@ -48,23 +64,12 @@ public class KillAura extends CheatTask {
         if(target.getId() != entityID)
             return;
 
-        touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
-        destroyTarget();
-        numberTouched++;
-        if(numberTouched >= 5)
-        {
-            AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched));
-            numberTouched = 0;
-            return;
-        }
-        generateRandomTarget();
-        countDown = CHECK_DURATION;
-
+        touchedTarget();
     }
 
-    public void run()
-    {
-        super.run();
+    @Override
+    public void exec() {
+
         long time = System.currentTimeMillis();
 
         if(targetLocation != null && target != null)
@@ -74,32 +79,78 @@ public class KillAura extends CheatTask {
             {
                 destroyTarget();
                 countDown = 0;
+                workingJob();
             }
+        }
+
+        if(!activeCheck)
+        {
+            return;
         }
 
         if(time > nextTest)
         {
-            numberTouched = 0;
-            destroyTarget();
-
-            generateTriggerTarget();
-
-            nextTest = time + CHECK_INTERVAL;
+            launchCheck();
         }
-
-        /*Location playerLocation = player.getLocation();
-
-        Location loc = getLocationBehondPlayer(playerLocation, 2);
-
-        try {
-            ParticleEffect.VILLAGER_HAPPY.display(0,0,0,0,1,loc,player);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
     }
 
     /*** Engine Side ***/
+
+    public void touchedTarget()
+    {
+        touched.put(new VirtualLocation(targetLocation.clone()), new VirtualLocation(player.getLocation().clone()));
+        isTouched = true;
+        numberTouched++;
+
+        destroyTarget();
+
+        workingJob();
+    }
+
+    public void workingJob()
+    {
+        if(!isTouched && numberDisplayed <= 1)
+        {
+            return;
+        }
+        if(!isTouched)
+        {
+            touched.put(null, new VirtualLocation(player.getLocation().clone()));
+        }
+        Bukkit.broadcastMessage("Touched: " + numberTouched + " Displayed: " + numberDisplayed);
+        isTouched = false;
+        if(numberDisplayed < CHECK_TO_DISPLAY)
+        {
+            generateTarget(getRandomPlayer(), getRandomLocationAroundPlayer(player.getLocation(), 2.5));
+            countDown = CHECK_DURATION;
+            numberDisplayed++;
+            return;
+        }
+
+        Bukkit.broadcastMessage("Touched: " + numberTouched + " Displayed: " + numberDisplayed);
+
+        if((double)numberTouched/(double)numberDisplayed >= POURCENTAGE_FOR_BAN)
+        {
+            AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched, numberDisplayed));
+            numberTouched = 0;
+            numberDisplayed = 1;
+            return;
+        }
+    }
+
+    public void launchCheck()
+    {
+        numberTouched = 0;
+        numberDisplayed = 1;
+        destroyTarget();
+
+        Bukkit.broadcastMessage("NEW ENTTY");
+
+        generateTarget(getRandomPlayer(), getLocationBehondPlayer(player.getLocation(), 2));
+        countDown = CHECK_DURATION;
+
+        nextTest = System.currentTimeMillis() + CHECK_INTERVAL;
+    }
 
     public void destroyTarget()
     {
@@ -109,64 +160,40 @@ public class KillAura extends CheatTask {
         sendPacket(player, generateDestroyPacket(target));
         target = null;
         targetLocation = null;
+        //isTouched = false;
     }
 
-    public void generateRandomTarget()
+    public void generateTarget(Player ptarget, Location position)
     {
-        /*UUID uvictim = UUID.randomUUID();
-        String nvictim = ""+new Random().nextInt(9999999);*/
-
-        Player victim = getRandomPlayer();
-        if (victim == null)
+        boolean needToDlSkin = true;
+        GameProfile target = null;
+        if(ptarget != null)
         {
-            return;
+            target = ((CraftPlayer) ptarget).getProfile();
+            needToDlSkin = false;
         }
 
-        Location victimLocation = getRandomLocationAroundPlayer(player.getLocation(), 2);
-
-        final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
-        target = entityHuman;
-        targetLocation = victimLocation;
-
-        //sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.ADD_PLAYER, entityHuman));
-        sendPacket(player, generateSpawnPacket(entityHuman));
-        //sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.REMOVE_PLAYER, entityHuman));
-        countDown = CHECK_DURATION;
-    }
-
-    public void generateTriggerTarget()
-    {
-        /*UUID uvictim = UUID.randomUUID();
-        String nvictim = ""+new Random().nextInt(9999999);*/
-
-        Player victim = getRandomPlayer();
-        if (victim == null)
+        if(target == null)
         {
-            return;
+            target = randomGameProfile();
         }
 
-        Location victimLocation = getLocationBehondPlayer(player.getLocation(), 2);
+        if(position == null)
+        {
+            position = getLocationBehondPlayer(player.getLocation(), 2);
+        }
 
+        final EntityPlayer entityHuman = generatePlayer(position, target);
+        this.target = entityHuman;
+        targetLocation = position;
 
-        final EntityPlayer entityHuman = generatePlayer(victimLocation, new GameProfile(victim.getUniqueId(), victim.getName()));
-        target = entityHuman;
-        targetLocation = victimLocation;
+        if(needToDlSkin)
+            sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.ADD_PLAYER, entityHuman));
 
-        //sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.ADD_PLAYER, entityHuman));
         sendPacket(player, generateSpawnPacket(entityHuman));
-        //sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.REMOVE_PLAYER, entityHuman));
-        countDown = CHECK_DURATION;
-    }
 
-    public Player getRandomPlayer()
-    {
-        Random random = new Random();
-        List<Player> players = player.getWorld().getPlayers();
-        players.remove(player);
-        if(players.size() == 0)
-            return null;
-
-        return players.get(random.nextInt(players.size()));
+        if(needToDlSkin)
+            sendPacket(player, new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.REMOVE_PLAYER, entityHuman));
     }
 
     /*** Locations Side ***/
@@ -178,7 +205,7 @@ public class KillAura extends CheatTask {
 
         double relativeX = Math.cos(Math.toRadians(finalYaw)) * radius;
         double relativeZ = Math.sin(Math.toRadians(finalYaw)) * radius;
-        double relativeY = -1;
+        double relativeY = -0.90;
 
         return new Location(referential.getWorld(),
                 referential.getX() + relativeX,
@@ -188,19 +215,17 @@ public class KillAura extends CheatTask {
 
     public Location getRandomLocationAroundPlayer(Location referential, double radius)
     {
-        Random random = new Random();
-        int location = orientation * 90;
-        orientation *= -1;
-        double finalYaw = Math.toRadians(random.nextInt(360 + location));
-        double finalPitch = Math.toRadians(random.nextInt(360 + location));
+
+        double finalYaw = Math.toRadians(randomAngle() + new Random().nextInt(10));
+        double finalPitch = Math.toRadians(randomAngle() + new Random().nextInt(10));
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeZ = Math.sin(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeY = Math.cos(finalPitch) * radius;
 
-        if(relativeY < 0.5)
+        if(relativeY < 1)
         {
-            relativeY = 0.5;
+            relativeY = 1;
         }
 
         return new Location(referential.getWorld(),
@@ -209,52 +234,9 @@ public class KillAura extends CheatTask {
                 referential.getZ() + relativeZ);
     }
 
-    /**
-     * Retourne true si le joueur vise la target
-     * @param player le shooter
-     * @param target la cible
-     * @param maxRange en bloc
-     * @param aiming 1 par d�faut, pour augmenter la marge de 20% 1.20
-     * @return
-     */
-    public boolean isTargeting(Player player, Location target, int maxRange, double aiming) {
-        Location playerEyes = player.getEyeLocation();
-
-        final Vector direction = playerEyes.getDirection().normalize();
-
-        Location loc = playerEyes.clone();
-        Location testLoc;
-        double lx, ly, lz;
-        double px, py, pz;
-
-        Vector progress = direction.clone().multiply(0.70);
-        maxRange = (100 * maxRange / 70);
-
-        int loop = 0;
-        while (loop < maxRange) {
-            loop++;
-            loc.add(progress);
-            //if (!wallHack)
-            lx = loc.getX();
-            ly = loc.getY();
-            lz = loc.getZ();
-
-                testLoc = target.clone().add(0, 0.85, 0);
-                px = testLoc.getX();
-                py = testLoc.getY();
-                pz = testLoc.getZ();
-
-                // Touche ou pas
-                boolean dX = Math.abs(lx - px) < 0.70 * aiming;
-                boolean dY = Math.abs(ly - py) < 1.70 * aiming;
-                boolean dZ = Math.abs(lz - pz) < 0.70 * aiming;
-
-                if (dX && dY && dZ) {
-                    return true;
-                }
-        }
-
-        return false;
+    public int randomAngle()
+    {
+        return angles.get(new Random().nextInt(angles.size()));
     }
 
     /*** Packet Side ***/
@@ -289,6 +271,22 @@ public class KillAura extends CheatTask {
     }
 
     /*** Tools Side ***/
+
+    public GameProfile randomGameProfile()
+    {
+        return new GameProfile(UUID.randomUUID(), ""+new Random().nextInt(9999999));
+    }
+
+    public Player getRandomPlayer()
+    {
+        Random random = new Random();
+        List<Player> players = player.getWorld().getPlayers();
+        players.remove(player);
+        if(players.size() == 0)
+            return null;
+
+        return players.get(random.nextInt(players.size()));
+    }
 
     private void setPrivateField(@SuppressWarnings("rawtypes") Class type, Object object, String name, Object value) {
         try {

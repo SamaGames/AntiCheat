@@ -428,9 +428,7 @@ public abstract class TinyProtocol {
             closed = true;
 
             // Remove our handlers
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                uninjectPlayer(player);
-            }
+            plugin.getServer().getOnlinePlayers().forEach(this::uninjectPlayer);
 
             // Clean up Bukkit
             HandlerList.unregisterAll(listener);

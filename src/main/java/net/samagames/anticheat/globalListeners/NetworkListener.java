@@ -41,19 +41,7 @@ public class NetworkListener implements Listener {
             return;
 
         speedHack.updateVelocity(event.getVelocity());
-
     }
-
-    /*@EventHandler
-    public void onPlayerMove(PlayerMoveEvent event)
-    {
-        if(!hasMoved(event.getFrom(), event.getTo()))
-            return;
-
-        ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
-        double distance = getHDistance(event.getFrom(), event.getTo());
-        acp.walkedDistance += distance;
-    }*/
 
     @EventHandler
     public void onPlayerClick(PlayerInteractEvent event)

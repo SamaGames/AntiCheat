@@ -1,6 +1,6 @@
 package net.samagames.anticheat.cheats.killaura;
 
-import net.samagames.anticheat.cheats.speedhack.VirtualLocation;
+import net.samagames.anticheat.cheats.VirtualLocation;
 import net.samagames.anticheat.database.BasicCheatLog;
 import org.bukkit.OfflinePlayer;
 
@@ -17,15 +17,20 @@ public class KillauraCheatLog extends BasicCheatLog {
 
 	private HashMap<VirtualLocation, VirtualLocation> targetsHits = new HashMap<>();
 
+	private int displayedCount;
+	private int hitCount;
+
 	/**
 	 * Construct the cheatLog
 	 * @param player Player who cheated
 	 * @param banTime The time the player will get banned
 	 * @param targetsHits The hits <targetloc:playerloc>
 	 */
-	protected KillauraCheatLog(OfflinePlayer player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits) {
+	protected KillauraCheatLog(OfflinePlayer player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits, int displayedCount) {
 		super(player, "KillAura", banTime);
 		this.targetsHits = targetsHits;
+		this.displayedCount = displayedCount;
+		this.hitCount = targetsHits.size();
 	}
 
 	/**
@@ -33,9 +38,11 @@ public class KillauraCheatLog extends BasicCheatLog {
 	 * @param player Player who cheated
 	 * @param targetsHits The hits <targetloc:playerloc>
 	 */
-	protected KillauraCheatLog(OfflinePlayer player, HashMap<VirtualLocation, VirtualLocation> targetsHits) {
+	protected KillauraCheatLog(OfflinePlayer player, HashMap<VirtualLocation, VirtualLocation> targetsHits, int displayedCount) {
 		super(player, "KillAura");
 		this.targetsHits = targetsHits;
+		this.displayedCount = displayedCount;
+		this.hitCount = targetsHits.size();
 	}
 
 	protected KillauraCheatLog() {

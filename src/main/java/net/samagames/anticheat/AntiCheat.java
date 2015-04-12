@@ -1,16 +1,11 @@
 package net.samagames.anticheat;
 
 
-import io.netty.channel.Channel;
-import net.minecraft.server.v1_8_R1.EnumEntityUseAction;
-import net.minecraft.server.v1_8_R1.PacketPlayInEntityAction;
-import net.minecraft.server.v1_8_R1.PacketPlayInPosition;
-import net.minecraft.server.v1_8_R1.PacketPlayInUseEntity;
 import net.samagames.anticheat.cheats.killaura.KillAura;
-import net.samagames.anticheat.cheats.speedhack.SpeedHack;
 import net.samagames.anticheat.database.BanRules;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
+import net.samagames.anticheat.globalListeners.PacketListener;
 import net.samagames.anticheat.packets.TinyProtocol;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,65 +88,9 @@ public class AntiCheat extends JavaPlugin implements Listener {
         Bukkit.getPluginCommand("anticheat").setExecutor(new CommandAnticheat());
 
         cheats.add(KillAura.class);
-        cheats.add(SpeedHack.class);
+        //cheats.add(SpeedHack.class);
 
-        protocol = new TinyProtocol(this) {
-            @Override
-            public Object onPacketInAsync(Player sender, Channel channel, Object packet) {
-                if(sender == null)
-                    return super.onPacketInAsync(sender, channel, packet);
-                ACPlayer acp = getPlayer(sender.getUniqueId());
-                if(acp == null)
-                    if(sender == null)
-                        return super.onPacketInAsync(sender, channel, packet);
-
-                if(packet instanceof PacketPlayInUseEntity)
-                {
-                    PacketPlayInUseEntity p = (PacketPlayInUseEntity)packet;
-                    if(p.a() == EnumEntityUseAction.ATTACK)
-                    {
-                        int id = -1;
-                        try {
-                            Field a = p.getClass().getDeclaredField("a");
-                            a.setAccessible(true);
-                            id = (int) a.get(p);
-                        } catch (NoSuchFieldException e) {
-                            e.printStackTrace();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-
-                        KillAura killAura = ((KillAura) acp.getCheat("KillAura"));
-                        if(killAura != null)
-                        {
-                            killAura.onClick(id);
-                        }
-                    }
-                }else if(packet instanceof PacketPlayInPosition)
-                {
-                    PacketPlayInPosition p = (PacketPlayInPosition)packet;
-                    SpeedHack speedHack = ((SpeedHack) acp.getCheat("SpeedHack"));
-                    if(speedHack != null)
-                    {
-                        speedHack.updateLocation(
-                                p.a(),
-                                p.b(),
-                                p.c());
-                    }
-                }else if(packet instanceof PacketPlayInEntityAction)
-                {
-                    PacketPlayInEntityAction p = (PacketPlayInEntityAction)packet;
-
-                    SpeedHack speedHack = ((SpeedHack) acp.getCheat("SpeedHack"));
-                    if(speedHack != null)
-                    {
-                        speedHack.playerAction(p.b());
-                    }
-                }
-
-                return super.onPacketInAsync(sender, channel, packet);
-            }
-        };
+        protocol = new PacketListener(this);
 
         Bukkit.getPluginManager().registerEvents(new NetworkListener(), this);
 
@@ -161,6 +99,12 @@ public class AntiCheat extends JavaPlugin implements Listener {
 
     public void onDisable()
     {
+        for(ACPlayer acp : acplayers.values())
+        {
+            acp.cheats.values().forEach(net.samagames.anticheat.CheatTask::cancel);
+        }
+        protocol.close();
+        protocol = null;
         //protocol.close();
     }
 }

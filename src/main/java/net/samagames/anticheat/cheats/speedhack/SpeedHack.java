@@ -73,7 +73,7 @@ public class SpeedHack extends CheatTask {
     protected int level = 0;
 
     public SpeedHack(Player player) {
-        super(player);
+        super(player, true);
 
         this.currentLocation = player.getLocation();
         this.previousLocation = player.getLocation();
@@ -247,6 +247,11 @@ public class SpeedHack extends CheatTask {
         } catch (IOException e) {
             e.printStackTrace();
         }*/
+    }
+
+    @Override
+    public void asyncExec() {
+
     }
 
     public void check()// Executé toute les 15 ticks
