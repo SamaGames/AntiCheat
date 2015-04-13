@@ -5,7 +5,6 @@ import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import net.samagames.anticheat.cheats.VirtualLocation;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -23,9 +22,14 @@ import java.util.*;
  */
 public class KillAura extends CheatTask {
 
-    public final long CHECK_INTERVAL = 1*30*1000;
+    //* For production
+    public final long CHECK_INTERVAL = 2*60*1000;/**/
+
+    /*For tests
+    public final long CHECK_INTERVAL = 20*1000;/**/
+
     public final int CHECK_DURATION = 15; //En tick
-    public final double POURCENTAGE_FOR_BAN = 1/2;
+    public final double POURCENTAGE_FOR_BAN = 1/2; // %
 
     public final int CHECK_TO_DISPLAY = 10;
 
@@ -52,8 +56,6 @@ public class KillAura extends CheatTask {
         angles.add(180);
         angles.add(270);
 
-
-        //TODO: Appel execution
     }
 
     public void onClick(int entityID)
@@ -117,7 +119,9 @@ public class KillAura extends CheatTask {
         {
             touched.put(null, new VirtualLocation(player.getLocation().clone()));
         }
-        Bukkit.broadcastMessage("Touched: " + numberTouched + " Displayed: " + numberDisplayed);
+
+        //Bukkit.broadcastMessage("Touched: " + numberTouched + " Displayed: " + numberDisplayed);
+
         isTouched = false;
         if(numberDisplayed < CHECK_TO_DISPLAY)
         {
@@ -127,9 +131,7 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        Bukkit.broadcastMessage("Touched: " + numberTouched + " Displayed: " + numberDisplayed);
-
-        if((double)numberTouched/(double)numberDisplayed >= POURCENTAGE_FOR_BAN)
+        if((double)numberTouched/(double)numberDisplayed > POURCENTAGE_FOR_BAN)
         {
             AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched, numberDisplayed));
             numberTouched = 0;
@@ -144,8 +146,6 @@ public class KillAura extends CheatTask {
         numberDisplayed = 1;
         destroyTarget();
 
-        Bukkit.broadcastMessage("NEW ENTTY");
-
         generateTarget(getRandomPlayer(), getLocationBehondPlayer(player.getLocation(), 2));
         countDown = CHECK_DURATION;
 
@@ -156,7 +156,7 @@ public class KillAura extends CheatTask {
     {
         if(target == null || targetLocation == null)
             return;
-
+        target.die();
         sendPacket(player, generateDestroyPacket(target));
         target = null;
         targetLocation = null;

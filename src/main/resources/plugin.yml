@@ -7,3 +7,5 @@ depend: [MasterBundle]
 commands:
    anticheat:
       description: Main anticheat commands
+   samaritan:
+      description: The best Global Security System

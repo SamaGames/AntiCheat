@@ -1,5 +1,6 @@
-package net.samagames.anticheat;
+package net.samagames.anticheat.commands;
 
+import net.samagames.anticheat.AntiCheat;
 import net.samagames.permissionsbukkit.PermissionsBukkit;
 import net.zyuiop.MasterBundle.MasterBundle;
 import org.apache.commons.lang3.StringUtils;

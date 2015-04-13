@@ -2,6 +2,8 @@ package net.samagames.anticheat;
 
 
 import net.samagames.anticheat.cheats.killaura.KillAura;
+import net.samagames.anticheat.commands.CommandAnticheat;
+import net.samagames.anticheat.commands.CommandSamaritan;
 import net.samagames.anticheat.database.BanRules;
 import net.samagames.anticheat.database.PunishmentsManager;
 import net.samagames.anticheat.globalListeners.NetworkListener;
@@ -86,6 +88,7 @@ public class AntiCheat extends JavaPlugin implements Listener {
         punishmentsManager = new PunishmentsManager();
 
         Bukkit.getPluginCommand("anticheat").setExecutor(new CommandAnticheat());
+        Bukkit.getPluginCommand("samaritan").setExecutor(new CommandSamaritan());
 
         cheats.add(KillAura.class);
         //cheats.add(SpeedHack.class);
