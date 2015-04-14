@@ -6,7 +6,10 @@ import net.samagames.anticheat.cheats.speedhack.SpeedHack;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 
 /**
  * This file is a part of the SamaGames Project CodeBase
@@ -41,29 +44,6 @@ public class NetworkListener implements Listener {
             return;
 
         speedHack.updateVelocity(event.getVelocity());
-    }
-
-    @EventHandler
-    public void onPlayerClick(PlayerInteractEvent event)
-    {
-       /* ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
-        KillAura ka = (KillAura) acp.getCheat("KillAura");
-
-        ka.onClick(event);*/
-    }
-
-    @EventHandler
-    public void onPlayerSneak(PlayerToggleSneakEvent event)
-    {
-        ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
-        acp.setSneaking(event.isSneaking());
-    }
-
-    @EventHandler
-    public void onPlayerSprint(PlayerToggleSprintEvent event)
-    {
-        ACPlayer acp = AntiCheat.getPlayer(event.getPlayer().getUniqueId());
-        acp.setSprinting(event.isSprinting());
     }
 
     public boolean hasMoved(final Location from, final Location to) {

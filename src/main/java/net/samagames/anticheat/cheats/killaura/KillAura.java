@@ -46,16 +46,20 @@ public class KillAura extends CheatTask {
     public long nextTest = System.currentTimeMillis();
     public int countDown = 0;
 
-    public List<Integer> angles = new ArrayList<>();
+    public HashMap<Integer, Integer> angles = new HashMap<>();
 
     public KillAura(final Player player) {
         super(player, true);
 
-        angles.add(0);
-        angles.add(90);
-        angles.add(180);
-        angles.add(270);
+        resetAngles();
+    }
 
+    public void resetAngles()
+    {
+        angles.put(0, 0);
+        angles.put(90, 0);
+        angles.put(180, 0);
+        angles.put(270, 0);
     }
 
     public void onClick(int entityID)
@@ -144,6 +148,8 @@ public class KillAura extends CheatTask {
     {
         numberTouched = 0;
         numberDisplayed = 1;
+        resetAngles();
+
         destroyTarget();
 
         generateTarget(getRandomPlayer(), getLocationBehondPlayer(player.getLocation(), 2));
@@ -216,8 +222,8 @@ public class KillAura extends CheatTask {
     public Location getRandomLocationAroundPlayer(Location referential, double radius)
     {
 
-        double finalYaw = Math.toRadians(randomAngle() + new Random().nextInt(10));
-        double finalPitch = Math.toRadians(randomAngle() + new Random().nextInt(10));
+        double finalYaw = Math.toRadians(getAngle() + new Random().nextInt(10));
+        double finalPitch = Math.toRadians(getAngle() + new Random().nextInt(10));
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeZ = Math.sin(finalPitch) * Math.sin(finalYaw) * radius;
@@ -234,10 +240,10 @@ public class KillAura extends CheatTask {
                 referential.getZ() + relativeZ);
     }
 
-    public int randomAngle()
+    /*public int randomAngle()
     {
         return angles.get(new Random().nextInt(angles.size()));
-    }
+    }*/
 
     /*** Packet Side ***/
 
@@ -271,6 +277,38 @@ public class KillAura extends CheatTask {
     }
 
     /*** Tools Side ***/
+
+    public int getAngle()
+    {
+        int usesOfAngle = Integer.MAX_VALUE;
+        List<Integer> tempAngles = new ArrayList<>();
+
+        for(int a : angles.keySet())
+        {
+            int uses = angles.get(a);
+
+            if(uses < usesOfAngle)
+            {
+                usesOfAngle = uses;
+            }
+        }
+
+        for(int a : angles.keySet())
+        {
+            int uses = angles.get(a);
+
+            if(uses <= usesOfAngle)
+            {
+                tempAngles.add(a);
+            }
+        }
+
+        Random rr = new Random();
+        int angle = tempAngles.get(rr.nextInt(tempAngles.size()));
+        angles.put(angle, angles.get(angle)+1);
+
+        return angle;
+    }
 
     public GameProfile randomGameProfile()
     {
