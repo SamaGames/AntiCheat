@@ -26,11 +26,11 @@ public class KillauraCheatLog extends BasicCheatLog {
 	 * @param banTime The time the player will get banned
 	 * @param targetsHits The hits <targetloc:playerloc>
 	 */
-	protected KillauraCheatLog(OfflinePlayer player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits, int displayedCount) {
+	protected KillauraCheatLog(OfflinePlayer player, String banTime, HashMap<VirtualLocation, VirtualLocation> targetsHits, int numberTouched, int displayedCount) {
 		super(player, "KillAura", banTime);
 		this.targetsHits = targetsHits;
 		this.displayedCount = displayedCount;
-		this.hitCount = targetsHits.size();
+		this.hitCount = numberTouched;
 	}
 
 	/**
@@ -38,11 +38,11 @@ public class KillauraCheatLog extends BasicCheatLog {
 	 * @param player Player who cheated
 	 * @param targetsHits The hits <targetloc:playerloc>
 	 */
-	protected KillauraCheatLog(OfflinePlayer player, HashMap<VirtualLocation, VirtualLocation> targetsHits, int displayedCount) {
+	protected KillauraCheatLog(OfflinePlayer player, HashMap<VirtualLocation, VirtualLocation> targetsHits, int numberTouched, int displayedCount) {
 		super(player, "KillAura");
 		this.targetsHits = targetsHits;
 		this.displayedCount = displayedCount;
-		this.hitCount = targetsHits.size();
+		this.hitCount = numberTouched;
 	}
 
 	protected KillauraCheatLog() {

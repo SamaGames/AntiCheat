@@ -29,7 +29,7 @@ public class KillAura extends CheatTask {
     public final long CHECK_INTERVAL = 20*1000;/**/
 
     public final int CHECK_DURATION = 15; //En tick
-    public final double POURCENTAGE_FOR_BAN = 1/2; // %
+    public final double POURCENTAGE_FOR_BAN = 5;
 
     public final int CHECK_TO_DISPLAY = 10;
 
@@ -131,9 +131,9 @@ public class KillAura extends CheatTask {
             return;
         }
 
-        if((double)numberTouched/(double)numberDisplayed > POURCENTAGE_FOR_BAN)
+        if(numberTouched >= POURCENTAGE_FOR_BAN)
         {
-            AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched, numberDisplayed));
+            AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched, numberTouched, numberDisplayed));
             numberTouched = 0;
             numberDisplayed = 1;
             return;
