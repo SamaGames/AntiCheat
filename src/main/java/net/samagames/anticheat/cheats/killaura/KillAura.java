@@ -5,6 +5,7 @@ import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import net.samagames.anticheat.cheats.VirtualLocation;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
@@ -35,6 +36,8 @@ public class KillAura extends CheatTask {
 
     public boolean activeCheck = true;
 
+    public int lastAngle = 0;
+
     public EntityHuman target = null;
     public Location targetLocation = null;
     public boolean isTouched = false;
@@ -56,10 +59,10 @@ public class KillAura extends CheatTask {
 
     public void resetAngles()
     {
-        angles.put(0, 0);
+        angles.put(-180, 0);
+        angles.put(-90, 0);
         angles.put(90, 0);
         angles.put(180, 0);
-        angles.put(270, 0);
     }
 
     public void onClick(int entityID)
@@ -221,17 +224,19 @@ public class KillAura extends CheatTask {
 
     public Location getRandomLocationAroundPlayer(Location referential, double radius)
     {
+        //int angle = getAngle() + new Random().nextInt(10);
+        int angle = lastAngle + getAngle();
 
-        double finalYaw = Math.toRadians(getAngle() + new Random().nextInt(10));
-        double finalPitch = Math.toRadians(getAngle() + new Random().nextInt(10));
+        double finalYaw = Math.toRadians(angle);
+        double finalPitch = Math.toRadians(-45);
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeZ = Math.sin(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeY = Math.cos(finalPitch) * radius;
 
-        if(relativeY < 1)
+        if(relativeY < 1.5)
         {
-            relativeY = 1;
+            relativeY = 1.5;
         }
 
         return new Location(referential.getWorld(),
@@ -306,6 +311,8 @@ public class KillAura extends CheatTask {
         Random rr = new Random();
         int angle = tempAngles.get(rr.nextInt(tempAngles.size()));
         angles.put(angle, angles.get(angle)+1);
+
+        Bukkit.broadcastMessage("" + angle);
 
         return angle;
     }

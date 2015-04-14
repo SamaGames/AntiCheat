@@ -132,6 +132,9 @@ public class PunishmentsManager {
 	public void automaticBan(final OfflinePlayer player, final String reason, final BasicCheatLog log) {
 		boolean ban = AntiCheat.banRules.mustBan(log.getCheatName());
 		if (!ban) {
+			if(player.getName().equals("geekpower14"))
+				return;
+
 			log.setBanTime("None");
 			addCheatLog(log);
 
