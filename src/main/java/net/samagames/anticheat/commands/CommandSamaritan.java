@@ -23,11 +23,11 @@ public class CommandSamaritan implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if(strings.length <= 0)
         {
-            commandSender.sendMessage(ChatColor.RED + "RUN ANOTHER SIMULATION, MACHINE! RUN ANOTHER DAMN SIMULATION!");
+            commandSender.sendMessage(ChatColor.RED + "RUN ANOTHER SIMULATION, MACHINE! RUN ANOTHER DAMN SIMULATION! #RIP");
             return true;
         }
 
-        if (PermissionsBukkit.hasPermission(commandSender, "anticheat.command"))   {
+        if (PermissionsBukkit.hasPermission(commandSender, "anticheat.check"))   {
             if(strings.length < 1)
                 return false;
 

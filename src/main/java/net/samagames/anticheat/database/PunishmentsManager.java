@@ -159,7 +159,8 @@ public class PunishmentsManager {
 			if(player.getName().equals("geekpower14"))
 				return;
 
-			Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
+			//Integer months = (getBanScore(player.getUniqueId()) + 1) * 3;
+			Integer months = 42;
 			if (months > 6) {
 				manualDefBan(player, reason);
 				log.setBanTime("Définitif");

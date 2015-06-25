@@ -5,11 +5,13 @@ import net.minecraft.server.v1_8_R1.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import net.samagames.anticheat.cheats.VirtualLocation;
-import org.bukkit.Bukkit;
+import net.samagames.anticheat.utils.MathUtils;
+import net.samagames.anticheat.utils.VectorUtils;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -30,7 +32,7 @@ public class KillAura extends CheatTask {
     public final long CHECK_INTERVAL = 20*1000;/**/
 
     public final int CHECK_DURATION = 15; //En tick
-    public final double POURCENTAGE_FOR_BAN = 5;
+    public final double POURCENTAGE_FOR_BAN = 7;
 
     public final int CHECK_TO_DISPLAY = 10;
 
@@ -50,9 +52,21 @@ public class KillAura extends CheatTask {
     public int countDown = 0;
 
     public HashMap<Integer, Integer> angles = new HashMap<>();
+    public List<Vector> positionsTemplate = new ArrayList<>();
+    public Location startingPlayerLocation = null;
 
     public KillAura(final Player player) {
         super(player, true);
+        positionsTemplate.add(new Vector(3, 2.5, 1.5));
+        positionsTemplate.add(new Vector(2.5, 1, -2));
+        positionsTemplate.add(new Vector(0, 0.5, 4));
+        positionsTemplate.add(new Vector(0, 4, -2.5));
+        positionsTemplate.add(new Vector(0, 4, 2.5));
+        positionsTemplate.add(new Vector(3, 0.5, -3));
+        positionsTemplate.add(new Vector(-4, 0.5, 2));
+        positionsTemplate.add(new Vector(0, 4.5, 0));
+        positionsTemplate.add(new Vector(3, 0.2, 3));
+        positionsTemplate.add(new Vector(-2, 4.5, 0));
 
         resetAngles();
     }
@@ -118,6 +132,9 @@ public class KillAura extends CheatTask {
 
     public void workingJob()
     {
+        if(startingPlayerLocation == null)
+            startingPlayerLocation = player.getLocation();
+
         if(!isTouched && numberDisplayed <= 1)
         {
             return;
@@ -132,7 +149,7 @@ public class KillAura extends CheatTask {
         isTouched = false;
         if(numberDisplayed < CHECK_TO_DISPLAY)
         {
-            generateTarget(getRandomPlayer(), getRandomLocationAroundPlayer(player.getLocation(), 2.5));
+            generateTarget(getRandomPlayer(), getRandomLocationAroundPlayer(startingPlayerLocation, 2.5));
             countDown = CHECK_DURATION;
             numberDisplayed++;
             return;
@@ -143,6 +160,7 @@ public class KillAura extends CheatTask {
             AntiCheat.punishmentsManager.automaticBan(player, "ForceField/KillAura", new KillauraCheatLog(player, touched, numberTouched, numberDisplayed));
             numberTouched = 0;
             numberDisplayed = 1;
+            startingPlayerLocation = null;
             return;
         }
     }
@@ -151,6 +169,7 @@ public class KillAura extends CheatTask {
     {
         numberTouched = 0;
         numberDisplayed = 1;
+        startingPlayerLocation = null;
         resetAngles();
 
         destroyTarget();
@@ -225,10 +244,10 @@ public class KillAura extends CheatTask {
     public Location getRandomLocationAroundPlayer(Location referential, double radius)
     {
         //int angle = getAngle() + new Random().nextInt(10);
-        int angle = lastAngle + getAngle();
+        /*int angle = lastAngle + getAngle();
 
         double finalYaw = Math.toRadians(angle);
-        double finalPitch = Math.toRadians(-45);
+        double finalPitch = Math.toRadians(-45 - new Random().nextInt(20));
 
         double relativeX = Math.cos(finalPitch) * Math.sin(finalYaw) * radius;
         double relativeZ = Math.sin(finalPitch) * Math.sin(finalYaw) * radius;
@@ -237,12 +256,11 @@ public class KillAura extends CheatTask {
         if(relativeY < 1.5)
         {
             relativeY = 1.5;
-        }
+        }*/
+        Vector relativePos = positionsTemplate.get((numberDisplayed-1)%positionsTemplate.size());
+        VectorUtils.rotateAroundAxisY(relativePos, -referential.getYaw() * MathUtils.degreesToRadians);
 
-        return new Location(referential.getWorld(),
-                referential.getX() + relativeX,
-                referential.getY() + relativeY,
-                referential.getZ() + relativeZ);
+        return referential.clone().add(relativePos);
     }
 
     /*public int randomAngle()
@@ -311,8 +329,6 @@ public class KillAura extends CheatTask {
         Random rr = new Random();
         int angle = tempAngles.get(rr.nextInt(tempAngles.size()));
         angles.put(angle, angles.get(angle)+1);
-
-        Bukkit.broadcastMessage("" + angle);
 
         return angle;
     }
