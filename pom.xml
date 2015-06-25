@@ -17,25 +17,18 @@
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
         <repository>
-            <id>zyuiop-repo</id>
-            <url>http://maven.samagames.net/</url>
+            <id>samagames-repo</id>
+            <url>http://maven.samagames.net/public/</url>
         </repository>
     </repositories>
 
-    <distributionManagement>
-        <repository>
-            <id>localrepo</id>
-            <layout>default</layout>
-            <url>file:///home/zyuiop/Java/SamaGames/repo</url>
-        </repository>
-    </distributionManagement>
-
-    <build><resources>
-        <resource>
-            <directory>src/main/resources/</directory>
-            <filtering>true</filtering>
-        </resource>
-    </resources>
+    <build>
+        <resources>
+             <resource>
+                <directory>src/main/resources/</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -84,5 +77,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>
