@@ -1,27 +1,15 @@
 package net.samagames.anticheat.cheats.speedhack;
 
-import net.minecraft.server.v1_8_R1.BlockPosition;
-import net.minecraft.server.v1_8_R1.EnumPlayerAction;
-import net.minecraft.server.v1_8_R1.WorldServer;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-/**
- * This file is a part of the SamaGames Project CodeBase
- * This code is absolutely confidential.
- * Created by Geekpower14
- * (C) Copyright Elydra Network 2014 & 2015
- * All rights reserved.
- */
 public class SpeedHack extends CheatTask {
 
     public static final String ANSI_RESET = "\u001B[0m";
@@ -72,22 +60,19 @@ public class SpeedHack extends CheatTask {
     protected Location cpreviousLocation;
     protected int level = 0;
 
-    public SpeedHack(Player player) {
+    public SpeedHack(Player player)
+    {
         super(player, true);
 
         this.currentLocation = player.getLocation();
         this.previousLocation = player.getLocation();
-
-       /* f = new File(AntiCheat.instance.getDataFolder(), "data.txt");
-        try {
-            f.createNewFile();
-            fw = new FileWriter(f);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-
     }
 
+    /**
+     * =============================================
+     * WORK IN PROGRESS, UN-COMMENT TO CODE
+     * =============================================
+     *
     public void playerAction(EnumPlayerAction action)
     {
         AntiCheat.log("[M] " + player.getName() + " Action: " + ANSI_RED + action.toString() + ANSI_RESET);
@@ -246,7 +231,7 @@ public class SpeedHack extends CheatTask {
             fw.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     @Override
@@ -401,5 +386,5 @@ public class SpeedHack extends CheatTask {
         }
 
         return f2;
-    }
+    }*/
 }

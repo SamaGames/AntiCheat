@@ -6,72 +6,53 @@ import org.bukkit.entity.Player;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
-/**
- * This file is a part of the SamaGames Project CodeBase
- * This code is absolutely confidential.
- * Created by Geekpower14
- * (C) Copyright Elydra Network 2014 & 2015
- * All rights reserved.
- */
-public abstract class CheatTask {
+public class CheatTask
+{
+    protected final ScheduledExecutorService poolExecutor;
+    protected final Player player;
+    protected boolean doTask;
 
-    protected Player player;
-    protected ScheduledExecutorService poolExecutor = Executors.newScheduledThreadPool(1);
-
-    protected boolean doTask = false;
-
-    public CheatTask(Player player, boolean doTask) {
+    public CheatTask(Player player, boolean doTask)
+    {
         this.player = player;
         this.doTask = doTask;
+        this.poolExecutor = Executors.newScheduledThreadPool(1);
 
-        AntiCheat.log("Register executor for " + player.getName());
+        if(AntiCheat.getInstance().isDeveloppmentExecution())
+            AntiCheat.getInstance().log(Level.INFO, "Register executor for " + player.getName());
 
         if(doTask)
-        {
-            //poolExecutor.schedule(() -> run(), 3L, TimeUnit.SECONDS);
-            poolExecutor.scheduleAtFixedRate(() -> run(), 3000L, 50L, TimeUnit.MILLISECONDS);
-        }
+            this.poolExecutor.scheduleAtFixedRate(() -> run(), 3000L, 50L, TimeUnit.MILLISECONDS);
     }
 
-    public void run() {
-        if (!player.isOnline())
+    public void run()
+    {
+        if (!this.player.isOnline())
         {
             this.cancel();
+            return;
         }
 
-        try{
-            Bukkit.getScheduler().runTask(AntiCheat.instance, new Runnable() {
-                @Override
-                public void run() {
-                    exec();
-                }
-            });
-        }catch (Exception e)
+        try
+        {
+            Bukkit.getScheduler().runTask(AntiCheat.getInstance(), () -> exec());
+            this.asyncExec();
+        }
+        catch (Exception e)
         {
             e.printStackTrace();
         }
-
-        try{
-            asyncExec();
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        //poolExecutor.schedule(() -> run(), 50L, TimeUnit.MILLISECONDS);
     }
 
-    public void asyncExec(){}
+    public void asyncExec() {}
+    public void exec() {}
 
-    public void exec(){}
-
-    public void cancel() {
-        if (poolExecutor != null)
-        {
-            poolExecutor.shutdown();
-            poolExecutor = null;
-        }
+    public void cancel()
+    {
+        if (this.poolExecutor != null)
+            this.poolExecutor.shutdown();
     }
 
 }

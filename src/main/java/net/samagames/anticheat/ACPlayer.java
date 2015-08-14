@@ -1,60 +1,63 @@
 package net.samagames.anticheat;
 
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
+import net.samagames.anticheat.cheats.Cheats;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
-/**
- * This file is a part of the SamaGames Project CodeBase
- * This code is absolutely confidential.
- * Created by Geekpower14
- * (C) Copyright Elydra Network 2014 & 2015
- * All rights reserved.
- */
-public class ACPlayer {
-    public HashMap<String,  CheatTask> cheats = new HashMap<>();
-    public double walkedDistance = 0.0;
-    public boolean isSneaking = false;
-    public long startedSneak = 0;
-    public boolean iSprinting = false;
-    public long startedSprinting = 0;
+public class ACPlayer
+{
+    private HashMap<Cheats, CheatTask> cheats;
     private Player player;
+    private double walkedDistance;
+    private long startedSneak;
+    private long startedSprinting;
+    private boolean isSneaking = false;
+    private boolean isSprinting = false;
 
-    public ACPlayer(Player player) {
+    public ACPlayer(Player player)
+    {
         this.player = player;
+        this.cheats = new HashMap<>();
+        this.isSneaking = false;
+        this.isSprinting = false;
+    }
+
+    public void addCheat(Cheats cheat, CheatTask cheatTask)
+    {
+        this.cheats.put(cheat, cheatTask);
     }
 
     public void setSneaking(boolean sneaking)
     {
-        if(!isSneaking && sneaking)
-        {
-            startedSneak = System.currentTimeMillis();
-        }
-        isSneaking = sneaking;
+        if(!this.isSneaking && sneaking)
+            this.startedSneak = System.currentTimeMillis();
+
+        this.isSneaking = sneaking;
     }
 
     public void setSprinting(boolean sprinting)
     {
-        if(!iSprinting && sprinting)
-        {
-            startedSprinting = System.currentTimeMillis();
-        }
-        iSprinting = sprinting;
+        if(!this.isSprinting && sprinting)
+            this.startedSprinting = System.currentTimeMillis();
+
+        this.isSprinting = sprinting;
     }
 
-    public void addCheat(String name, CheatTask classe)
+    public CheatTask getCheat(Cheats cheat)
     {
-        cheats.put(name, classe);
+        return this.cheats.get(cheat);
     }
 
-    public CheatTask getCheat(String name)
+    public HashMap<Cheats, CheatTask> getCheats()
     {
-        return cheats.get(name);
+        return this.cheats;
     }
 
-    public int getPing() {
-        return ((CraftPlayer)player).getHandle().ping;
+    public int getPing()
+    {
+        return ((CraftPlayer) this.player).getHandle().ping;
     }
 
 }

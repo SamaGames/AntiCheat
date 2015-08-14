@@ -2,30 +2,21 @@ package net.samagames.anticheat.database;
 
 import net.md_5.bungee.api.ChatColor;
 
-/**
- * This file is a part of the SamaGames project
- * This code is absolutely confidential.
- * Created by zyuiop
- * (C) Copyright Elydra Network 2015
- * All rights reserved.
- */
-public class JsonModMessage {
+public class JsonModMessage
+{
+	private String sender;
+    private ChatColor senderPrefix;
+    private String message;
 
-	protected String sender;
-	protected ChatColor senderPrefix;
-	protected String message;
-
-	public JsonModMessage() {
-	}
-
-	public JsonModMessage(String sender, ChatColor senderPrefix, String message) {
+	public JsonModMessage(String sender, ChatColor senderPrefix, String message)
+    {
 		this.sender = sender;
 		this.senderPrefix = senderPrefix;
 		this.message = message;
 	}
 
 	public String getSender() {
-		return sender;
+		return this.sender;
 	}
 
 	public void setSender(String sender) {
@@ -33,7 +24,7 @@ public class JsonModMessage {
 	}
 
 	public ChatColor getSenderPrefix() {
-		return senderPrefix;
+		return this.senderPrefix;
 	}
 
 	public void setSenderPrefix(ChatColor senderPrefix) {
@@ -41,7 +32,7 @@ public class JsonModMessage {
 	}
 
 	public String getMessage() {
-		return message;
+		return this.message;
 	}
 
 	public void setMessage(String message) {
