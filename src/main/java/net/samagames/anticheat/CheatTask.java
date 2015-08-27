@@ -20,11 +20,11 @@ public class CheatTask
         this.doTask = doTask;
         this.poolExecutor = Executors.newScheduledThreadPool(1);
 
-        if(AntiCheat.getInstance().isDeveloppmentExecution())
+        if (AntiCheat.getInstance().isDeveloppmentExecution())
             AntiCheat.getInstance().log(Level.INFO, "Register executor for " + player.getName());
 
-        if(doTask)
-            this.poolExecutor.scheduleAtFixedRate(() -> run(), 3000L, 50L, TimeUnit.MILLISECONDS);
+        if (doTask)
+            this.poolExecutor.scheduleAtFixedRate(this::run, 3000L, 50L, TimeUnit.MILLISECONDS);
     }
 
     public void run()
@@ -37,17 +37,21 @@ public class CheatTask
 
         try
         {
-            Bukkit.getScheduler().runTask(AntiCheat.getInstance(), () -> exec());
+            Bukkit.getScheduler().runTask(AntiCheat.getInstance(), this::exec);
             this.asyncExec();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
         }
     }
 
-    public void asyncExec() {}
-    public void exec() {}
+    public void asyncExec()
+    {
+    }
+
+    public void exec()
+    {
+    }
 
     public void cancel()
     {

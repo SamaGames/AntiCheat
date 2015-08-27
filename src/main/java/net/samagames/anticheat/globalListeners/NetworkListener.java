@@ -1,9 +1,6 @@
 package net.samagames.anticheat.globalListeners;
 
-import net.samagames.anticheat.ACPlayer;
 import net.samagames.anticheat.AntiCheat;
-import net.samagames.anticheat.cheats.speedhack.SpeedHack;
-import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -14,17 +11,20 @@ import org.bukkit.event.player.PlayerVelocityEvent;
 public class NetworkListener implements Listener
 {
     @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(PlayerJoinEvent event)
+    {
         AntiCheat.getInstance().login(event.getPlayer());
     }
 
     @EventHandler
-    public void onLeave(PlayerQuitEvent event) {
+    public void onLeave(PlayerQuitEvent event)
+    {
         AntiCheat.getInstance().logout(event.getPlayer());
     }
 
     @EventHandler
-    public void onLeave(PlayerKickEvent event) {
+    public void onLeave(PlayerKickEvent event)
+    {
         AntiCheat.getInstance().logout(event.getPlayer());
     }
 

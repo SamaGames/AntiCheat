@@ -12,59 +12,59 @@ import java.util.UUID;
 public abstract class BasicCheatLog
 {
     private Cheats cheat;
-	private String server;
-	private Date date;
-	private UUID playerID;
-	private String playerName;
-	private Double serverTps;
-	private Integer playerLag;
+    private String server;
+    private Date date;
+    private UUID playerID;
+    private String playerName;
+    private Double serverTps;
+    private Integer playerLag;
 
-	public BasicCheatLog(OfflinePlayer player, Cheats cheat)
+    public BasicCheatLog(OfflinePlayer player, Cheats cheat)
     {
-		this.server = SamaGamesAPI.get().getServerName();
-		this.date = new Date();
-		this.playerID = player.getUniqueId();
-		this.playerName = player.getName();
+        this.server = SamaGamesAPI.get().getServerName();
+        this.date = new Date();
+        this.playerID = player.getUniqueId();
+        this.playerName = player.getName();
 
-		double[] tab = MinecraftServer.getServer().recentTps;
-		this.serverTps = tab[0];
+        double[] tab = MinecraftServer.getServer().recentTps;
+        this.serverTps = tab[0];
 
-		this.playerLag = ((CraftPlayer) player).getHandle().ping;
-		this.cheat = cheat;
-	}
+        this.playerLag = ((CraftPlayer) player).getHandle().ping;
+        this.cheat = cheat;
+    }
 
-	public String getServer()
+    public String getServer()
     {
-		return this.server;
-	}
+        return this.server;
+    }
 
-	public Date getDate()
+    public Date getDate()
     {
-		return this.date;
-	}
+        return this.date;
+    }
 
-	public UUID getPlayerID()
+    public UUID getPlayerID()
     {
-		return this.playerID;
-	}
+        return this.playerID;
+    }
 
-	public String getPlayerName()
+    public String getPlayerName()
     {
-		return this.playerName;
-	}
+        return this.playerName;
+    }
 
-	public Double getServerTps()
+    public Double getServerTps()
     {
-		return this.serverTps;
-	}
+        return this.serverTps;
+    }
 
-	public Integer getPlayerLag()
+    public Integer getPlayerLag()
     {
-		return this.playerLag;
-	}
+        return this.playerLag;
+    }
 
-	public Cheats getCheat()
+    public Cheats getCheat()
     {
-		return this.cheat;
-	}
+        return this.cheat;
+    }
 }

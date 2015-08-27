@@ -10,7 +10,6 @@ import net.samagames.anticheat.globalListeners.PacketListener;
 import net.samagames.anticheat.packets.TinyProtocol;
 import net.samagames.tools.JsonConfiguration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,6 +28,11 @@ public class AntiCheat extends JavaPlugin
     private TinyProtocol protocol;
     private boolean developpmentExecution;
 
+    public static AntiCheat getInstance()
+    {
+        return instance;
+    }
+
     public void onEnable()
     {
         instance = this;
@@ -43,11 +47,11 @@ public class AntiCheat extends JavaPlugin
 
         this.developpmentExecution = jsonConfiguration.get("developpment-execution").getAsBoolean();
 
-        for(int i = 0; i < cheatsDisabled.size(); i++)
+        for (int i = 0; i < cheatsDisabled.size(); i++)
         {
             Cheats cheat = Cheats.valueOf(cheatsDisabled.get(i).getAsString().toUpperCase());
 
-            if(cheat != null)
+            if (cheat != null)
             {
                 cheat.disable();
                 this.log(Level.INFO, "Cheat disabled: " + cheat.getIdentifier());
@@ -62,7 +66,7 @@ public class AntiCheat extends JavaPlugin
 
     public void onDisable()
     {
-        for(ACPlayer acp : acplayers.values())
+        for (ACPlayer acp : acplayers.values())
             acp.getCheats().values().forEach(net.samagames.anticheat.CheatTask::cancel);
 
         this.protocol.close();
@@ -74,17 +78,16 @@ public class AntiCheat extends JavaPlugin
 
         for (Cheats cheat : Cheats.values())
         {
-            if(cheat.isCurrentlyOnTest() && !this.developpmentExecution)
+            if (cheat.isCurrentlyOnTest() && !this.developpmentExecution)
                 continue;
 
             try
             {
                 acp.addCheat(cheat, cheat.getCheatClass().getConstructor(Player.class).newInstance(player));
 
-                if(this.developpmentExecution)
+                if (this.developpmentExecution)
                     this.log(Level.INFO, "Listening cheat " + cheat.getIdentifier() + " for the player '" + player.getName() + "'.");
-            }
-            catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e)
             {
                 e.printStackTrace();
             }
@@ -116,10 +119,5 @@ public class AntiCheat extends JavaPlugin
     public boolean isDeveloppmentExecution()
     {
         return this.developpmentExecution;
-    }
-
-    public static AntiCheat getInstance()
-    {
-        return instance;
     }
 }

@@ -4,12 +4,19 @@ import com.google.gson.Gson;
 import net.md_5.bungee.api.ChatColor;
 import net.samagames.api.SamaGamesAPI;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ShardedJedis;
 
 import java.util.UUID;
 
 public class ModerationTools
 {
+
+    private static final SamaGamesAPI API = SamaGamesAPI.get();
+
+    private ModerationTools()
+    {
+
+    }
+
     public static void addSanction(JsonCaseLine sanction, UUID player)
     {
         Long time = System.currentTimeMillis();
@@ -27,20 +34,20 @@ public class ModerationTools
 
         modMessage("Samaritan", ChatColor.DARK_RED, message);
 
-        Jedis jedis = SamaGamesAPI.get().getBungeeResource();
+        Jedis jedis = API.getBungeeResource();
         jedis.publish("cheat", toPseudo + "#####" + sanction.getMotif());
         jedis.close();
     }
 
-	public static void sendModMessage(JsonModMessage message)
+    public static void sendModMessage(JsonModMessage message)
     {
-        Jedis jedis = SamaGamesAPI.get().getBungeeResource();
-        jedis.publish("redisbungee-allservers", "Mod::"+new Gson().toJson(message));
+        Jedis jedis = API.getBungeeResource();
+        jedis.publish("redisbungee-allservers", "Mod::" + new Gson().toJson(message));
         jedis.close();
-	}
+    }
 
     public static void modMessage(String from, ChatColor prefix, String message)
     {
-		sendModMessage(new JsonModMessage(from, prefix, message));
+        sendModMessage(new JsonModMessage(from, prefix, message));
     }
 }

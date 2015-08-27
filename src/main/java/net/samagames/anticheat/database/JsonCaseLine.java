@@ -7,7 +7,7 @@ public class JsonCaseLine
     private String motif;
     private String duration;
     private Long timestamp;
-	private Long durationTime;
+    private Long durationTime;
 
     public Long getTimestamp()
     {
@@ -59,13 +59,13 @@ public class JsonCaseLine
         this.duration = duration;
     }
 
-	public Long getDurationTime()
+    public Long getDurationTime()
     {
-		return this.durationTime;
-	}
+        return this.durationTime;
+    }
 
-	public void setDurationTime(Long durationTime)
+    public void setDurationTime(Long durationTime)
     {
-		this.durationTime = durationTime;
-	}
+        this.durationTime = durationTime;
+    }
 }

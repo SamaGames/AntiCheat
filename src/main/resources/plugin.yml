@@ -2,7 +2,7 @@ name: AntiCheat
 main: net.samagames.anticheat.AntiCheat
 version: 1.0.0
 
-authors: [Geekpower14, IamBlueSlime]
+authors: [Geekpower14, IamBlueSlime, Thog]
 website: http://samagames.net/
 
 depend: [SamaGamesAPI]

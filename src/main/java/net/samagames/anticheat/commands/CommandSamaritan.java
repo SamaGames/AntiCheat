@@ -17,7 +17,7 @@ public class CommandSamaritan implements CommandExecutor
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings)
     {
-        if(strings.length <= 0)
+        if (strings.length <= 0)
         {
             commandSender.sendMessage(ChatColor.RED + "RUN ANOTHER SIMULATION, MACHINE! RUN ANOTHER DAMN SIMULATION! #RIP");
             return true;
@@ -25,16 +25,16 @@ public class CommandSamaritan implements CommandExecutor
 
         if (SamaGamesAPI.get().getPermissionsManager().hasPermission(commandSender, "anticheat.check"))
         {
-            if(strings.length < 1)
+            if (strings.length < 1)
                 return false;
 
             if (strings[0].equals("check"))
             {
-                if(strings.length >= 2)
+                if (strings.length >= 2)
                 {
                     Player player = Bukkit.getPlayer(strings[1]);
 
-                    if(player == null)
+                    if (player == null)
                     {
                         commandSender.sendMessage(ChatColor.RED + "Erreur nom du joueur");
                         return true;
@@ -42,7 +42,7 @@ public class CommandSamaritan implements CommandExecutor
 
                     ACPlayer acp = AntiCheat.getInstance().getPlayer(player.getUniqueId());
 
-                    if(acp == null)
+                    if (acp == null)
                     {
                         commandSender.sendMessage(ChatColor.RED + "Erreur joueur non surveillé par Samaritian ! Vigilance !");
                         return true;
@@ -50,7 +50,7 @@ public class CommandSamaritan implements CommandExecutor
 
                     KillAura killAura = (KillAura) acp.getCheat(Cheats.KILLAURA);
 
-                    if(killAura == null)
+                    if (killAura == null)
                     {
                         commandSender.sendMessage(ChatColor.RED + "Erreur KillAura désactivé");
                         return true;

@@ -31,7 +31,7 @@ public class ACPlayer
 
     public void setSneaking(boolean sneaking)
     {
-        if(!this.isSneaking && sneaking)
+        if (!this.isSneaking && sneaking)
             this.startedSneak = System.currentTimeMillis();
 
         this.isSneaking = sneaking;
@@ -39,7 +39,7 @@ public class ACPlayer
 
     public void setSprinting(boolean sprinting)
     {
-        if(!this.isSprinting && sprinting)
+        if (!this.isSprinting && sprinting)
             this.startedSprinting = System.currentTimeMillis();
 
         this.isSprinting = sprinting;

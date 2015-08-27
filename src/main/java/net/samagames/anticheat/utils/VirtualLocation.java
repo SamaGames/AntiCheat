@@ -4,78 +4,79 @@ import org.bukkit.Location;
 
 public class VirtualLocation
 {
-	private String world;
-	private double x;
-	private double y;
-	private double z;
+    private String world;
+    private double x;
+    private double y;
+    private double z;
 
-	public VirtualLocation(Location loc)
+    public VirtualLocation(Location loc)
     {
         this.world = loc.getWorld().getName();
-		this.x = loc.getX();
+        this.x = loc.getX();
         this.y = loc.getY();
         this.z = loc.getZ();
-	}
+    }
 
-	public double getX()
+    public double getX()
     {
-		return this.x;
-	}
+        return this.x;
+    }
 
-	public void setX(double x)
+    public void setX(double x)
     {
-		this.x = x;
-	}
+        this.x = x;
+    }
 
-	public double getY()
+    public double getY()
     {
-		return this.y;
-	}
+        return this.y;
+    }
 
-	public void setY(double y)
+    public void setY(double y)
     {
-		this.y = y;
-	}
+        this.y = y;
+    }
 
-	public double getZ()
+    public double getZ()
     {
-		return this.z;
-	}
+        return this.z;
+    }
 
-	public void setZ(double z)
+    public void setZ(double z)
     {
-		this.z = z;
-	}
+        this.z = z;
+    }
 
-	public String getWorld()
+    public String getWorld()
     {
-		return this.world;
-	}
+        return this.world;
+    }
 
-	@Override
-	public boolean equals(Object o)
+    @Override
+    public boolean equals(Object o)
     {
-		if (this == o)
-			return true;
+        if (this == o)
+            return true;
 
-		if (!(o instanceof VirtualLocation))
-			return false;
+        if (!(o instanceof VirtualLocation))
+            return false;
 
-		VirtualLocation that = (VirtualLocation) o;
+        VirtualLocation that = (VirtualLocation) o;
 
-		if (this.x != that.x)
-			return false;
+        if (this.x != that.x)
+            return false;
 
-		if (this.y != that.y)
-			return false;
+        if (this.y != that.y)
+            return false;
 
-		if (this.z != that.z)
-			return false;
+        if (this.z != that.z)
+            return false;
 
-		return true;
-	}
+        return true;
+    }
 
-	public String toString() {
-		return this.x + "/" + this.y + "/" + this.z;
-	}
+    public String toString()
+    {
+        return this.x + "/" + this.y + "/" + this.z;
+    }
 }

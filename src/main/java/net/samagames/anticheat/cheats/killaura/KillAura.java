@@ -5,9 +5,9 @@ import net.minecraft.server.v1_8_R3.*;
 import net.samagames.anticheat.AntiCheat;
 import net.samagames.anticheat.CheatTask;
 import net.samagames.anticheat.cheats.Cheats;
-import net.samagames.anticheat.utils.VirtualLocation;
 import net.samagames.anticheat.utils.MathUtils;
 import net.samagames.anticheat.utils.VectorUtils;
+import net.samagames.anticheat.utils.VirtualLocation;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -18,10 +18,10 @@ import java.util.*;
 
 public class KillAura extends CheatTask
 {
-    private final long CHECK_INTERVAL = 2*60*1000;
+    private final long CHECK_INTERVAL = 2 * 60 * 1000;
     private final int CHECK_DURATION = 15;
     private final int CHECK_TO_DISPLAY = 10;
-    private final double POURCENTAGE_FOR_BAN = 7;
+    private final double PERCENT_FOR_BAN = 7;
 
     private HashMap<VirtualLocation, VirtualLocation> touched;
     private HashMap<Integer, Integer> angles;
@@ -72,10 +72,10 @@ public class KillAura extends CheatTask
 
     public void onClick(int entityID)
     {
-        if(this.targetLocation == null || this.target == null)
+        if (this.targetLocation == null || this.target == null)
             return;
 
-        if(this.target.getId() != entityID)
+        if (this.target.getId() != entityID)
             return;
 
         touchedTarget();
@@ -86,11 +86,11 @@ public class KillAura extends CheatTask
     {
         long time = System.currentTimeMillis();
 
-        if(this.targetLocation != null && this.target != null)
+        if (this.targetLocation != null && this.target != null)
         {
             this.countDown--;
 
-            if(this.countDown <= 0)
+            if (this.countDown <= 0)
             {
                 this.destroyTarget();
                 this.countDown = 0;
@@ -98,14 +98,16 @@ public class KillAura extends CheatTask
             }
         }
 
-        if(!this.activeCheck)
+        if (!this.activeCheck)
             return;
 
-        if(time > this.nextTest)
+        if (time > this.nextTest)
             launchCheck();
     }
 
-    /*** Engine Side ***/
+    /***
+     * Engine Side
+     ***/
 
     public void touchedTarget()
     {
@@ -119,18 +121,18 @@ public class KillAura extends CheatTask
 
     public void workingJob()
     {
-        if(this.startingPlayerLocation == null)
+        if (this.startingPlayerLocation == null)
             this.startingPlayerLocation = this.player.getLocation();
 
-        if(!this.isTouched && this.numberDisplayed <= 1)
+        if (!this.isTouched && this.numberDisplayed <= 1)
             return;
 
-        if(!this.isTouched)
+        if (!this.isTouched)
             this.touched.put(null, new VirtualLocation(player.getLocation().clone()));
 
         this.isTouched = false;
 
-        if(this.numberDisplayed < this.CHECK_TO_DISPLAY)
+        if (this.numberDisplayed < this.CHECK_TO_DISPLAY)
         {
             this.generateTarget(this.getRandomPlayer(), this.getRandomLocationAroundPlayer(this.startingPlayerLocation));
             this.countDown = this.CHECK_DURATION;
@@ -139,15 +141,13 @@ public class KillAura extends CheatTask
             return;
         }
 
-        if(this.numberTouched >= this.POURCENTAGE_FOR_BAN)
+        if (this.numberTouched >= this.PERCENT_FOR_BAN)
         {
             AntiCheat.getInstance().getPunishmentsManager().automaticBan(this.player, Cheats.KILLAURA, new KillauraCheatLog(this.player, this.touched, this.numberTouched, this.numberDisplayed));
 
             this.numberTouched = 0;
             this.numberDisplayed = 1;
             this.startingPlayerLocation = null;
-
-            return;
         }
     }
 
@@ -167,7 +167,7 @@ public class KillAura extends CheatTask
 
     public void destroyTarget()
     {
-        if(target == null || targetLocation == null)
+        if (target == null || targetLocation == null)
             return;
         target.die();
         sendPacket(player, generateDestroyPacket(target));
@@ -181,28 +181,28 @@ public class KillAura extends CheatTask
         boolean needToDlSkin = true;
         GameProfile target = null;
 
-        if(ptarget != null)
+        if (ptarget != null)
         {
             target = ((CraftPlayer) ptarget).getProfile();
             needToDlSkin = false;
         }
 
-        if(target == null)
+        if (target == null)
             target = this.randomGameProfile();
 
-        if(position == null)
+        if (position == null)
             position = this.getLocationBehondPlayer(this.player.getLocation(), 2);
 
         final EntityPlayer entityHuman = generatePlayer(position, target);
         this.target = entityHuman;
         this.targetLocation = position;
 
-        if(needToDlSkin)
+        if (needToDlSkin)
             this.sendPacket(this.player, new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, entityHuman));
 
         this.sendPacket(this.player, this.generateSpawnPacket(entityHuman));
 
-        if(needToDlSkin)
+        if (needToDlSkin)
             this.sendPacket(this.player, new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER, entityHuman));
     }
 
@@ -211,7 +211,9 @@ public class KillAura extends CheatTask
         this.nextTest = System.currentTimeMillis();
     }
 
-    /*** Locations side ***/
+    /***
+     * Locations side
+     ***/
 
     public Location getLocationBehondPlayer(Location referential, double radius)
     {
@@ -237,7 +239,9 @@ public class KillAura extends CheatTask
         return referential.clone().add(relativePos);
     }
 
-    /*** Packet side ***/
+    /***
+     * Packet side
+     ***/
 
     public EntityPlayer generatePlayer(Location loc, GameProfile gameProfile)
     {
@@ -267,7 +271,9 @@ public class KillAura extends CheatTask
         return new PacketPlayOutEntityDestroy(human.getId());
     }
 
-    /*** Tools Side ***/
+    /***
+     * Tools Side
+     ***/
 
     public GameProfile randomGameProfile()
     {
@@ -281,7 +287,7 @@ public class KillAura extends CheatTask
 
         players.remove(this.player);
 
-        if(players.size() == 0)
+        if (players.size() == 0)
             return null;
 
         return players.get(random.nextInt(players.size()));

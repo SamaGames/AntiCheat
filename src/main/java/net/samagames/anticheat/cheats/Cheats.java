@@ -5,8 +5,7 @@ import net.samagames.anticheat.cheats.killaura.KillAura;
 
 public enum Cheats
 {
-    KILLAURA("KillAura", "ForceField/KillAura", KillAura.class, true),
-    ;
+    KILLAURA("KillAura", "ForceField/KillAura", KillAura.class, true),;
 
     private final String identifier;
     private final String banReason;
