@@ -21,7 +21,7 @@ public class VirtualPlayer
 {
     private Player player;
 
-    private HashMap<EnumCheat, CheatTask> cheats;
+    private HashMap<EnumCheat, CheatTask> cheats = new HashMap<>();
 
     private Map<String, Object> playerData = new HashMap<>();
     private static final Map<UUID, VirtualPlayer> VIRTUAL_PLAYER_MAP = new HashMap<>();
@@ -80,7 +80,7 @@ public class VirtualPlayer
 
     public Integer getPacketCounter(String packet)
     {
-        return (Integer) getDataOrDefault(packet, 0);
+        return getDataOrDefault(packet, 0);
     }
 
     public void resetPacketCounter(String packet)
@@ -94,9 +94,9 @@ public class VirtualPlayer
         return getDataOrDefault(key, null);
     }
 
-    public Object getDataOrDefault(String key, Object defaultValue)
+    public <E> E getDataOrDefault(String key, E defaultValue)
     {
-        return playerData.getOrDefault(key, defaultValue);
+        return (E) playerData.getOrDefault(key, defaultValue);
     }
 
     public void setData(String key, Object value)

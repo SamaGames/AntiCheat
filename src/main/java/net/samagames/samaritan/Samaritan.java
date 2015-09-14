@@ -37,6 +37,7 @@ public class Samaritan extends JavaPlugin
         instance = this;
         logger = getLogger();
         shadows = ShadowsAPI.get();
+        punishmentsManager = new PunishmentsManager(this);
 
 
         this.saveResource("config.json", false);

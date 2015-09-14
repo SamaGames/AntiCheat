@@ -74,6 +74,7 @@ public class AntiPF extends CheatModule implements IPacketListener, Runnable
 
             if (player.getFallDistance() > 0 && playerPacket.isOnGround())
             {
+                // Async, get the instance
                 samaritan.getLogger().info("Fixing possible NoFall hack for player " + player);
                 playerPacket.setOnGround(false);
                 playerPacket.markDirty();
@@ -100,7 +101,23 @@ public class AntiPF extends CheatModule implements IPacketListener, Runnable
 
                         // You can't be on the air and have a fallDistance of 0, you are cheating, FastBow confirmed!
                         if (player.getFallDistance() <= 0 && !packetPlayer.isOnGround())
-                            samaritan.getPunishmentsManager().automaticBan(player, EnumCheat.FASTBOW, new BasicCheatLog(player, EnumCheat.FASTBOW));
+                        {
+                            Integer i = vPlayer.getDataOrDefault("fastbow-alert", 0);
+                            Boolean alreadyAlerted = vPlayer.getDataOrDefault("fastbow-alreadyAlerted", false);
+                            if (i > 20 && !alreadyAlerted)
+                            {
+                                // Async, get the instance
+                                samaritan.getPunishmentsManager().automaticBan(player, EnumCheat.FASTBOW, new BasicCheatLog(player, EnumCheat.FASTBOW));
+                                vPlayer.setData("fastbow-alreadyAlerted", true);
+                            }
+                            else
+                            {
+                                i++;
+                                vPlayer.setData("fastbow-alert", i);
+                            }
+
+                        }
+
                     }
                 }
                 // A normal client doesn't do that!

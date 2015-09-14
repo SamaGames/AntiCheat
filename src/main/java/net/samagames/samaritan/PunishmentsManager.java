@@ -47,7 +47,8 @@ public class PunishmentsManager
     {
         this.insertBan(player.getUniqueId(), reason);
 
-        SamaGamesAPI.get().getProxyDataManager().apiexec("kick", player.getUniqueId() + " " + ComponentSerializer.toString(new TextComponent("Vous avez été banni définitivement : " + reason)));
+        System.out.println(player.getUniqueId() + " " + ComponentSerializer.toString(new TextComponent("Vous avez Ã©tÃ© banni dÃ©finitivement : " + reason)));
+        SamaGamesAPI.get().getProxyDataManager().apiexec("kick", player.getUniqueId() + " " + new Gson().toJson(new TextComponent("Vous avez Ã©tÃ© banni dÃ©finitivement : " + reason)));
 
         JsonCaseLine sanction = new JsonCaseLine();
         sanction.setAddedBy("Samaritain");
@@ -61,7 +62,7 @@ public class PunishmentsManager
 
     private void insertBan(UUID player, String reason)
     {
-        Object result = RestAPI.getInstance().sendRequest("player/ban", new Request().addProperty("reason", (reason == null) ? "Vous êtes banni." : reason).addProperty("playerUUID", player).addProperty("punisherUUID", new UUID(0,0)).addProperty("expiration", 0), StatusResponse.class, "POST");
+        Object result = RestAPI.getInstance().sendRequest("player/ban", new Request().addProperty("reason", (reason == null) ? "Vous Ãªtes banni." : reason).addProperty("playerUUID", player).addProperty("punisherUUID", new UUID(0,0)).addProperty("expiration", 0), StatusResponse.class, "POST");
 
         if (result instanceof ErrorResponse || (result instanceof StatusResponse && !(((StatusResponse) result).getStatus())))
         {
@@ -74,7 +75,7 @@ public class PunishmentsManager
 
         if (cheat.isBeta())
         {
-            ModerationTools.modMessage("Samaritan", net.md_5.bungee.api.ChatColor.RED, "Le joueur " + player.getName() + " est suspecté de : " + cheat.getBanReason());
+            ModerationTools.modMessage("Samaritan", net.md_5.bungee.api.ChatColor.RED, "Le joueur " + player.getName() + " est suspectÃ© de : " + cheat.getBanReason());
         }
         else
         {
