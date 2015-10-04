@@ -33,7 +33,7 @@ public class ModerationTools
 
     public static void broadcastSanction(JsonCaseLine sanction, String toPseudo)
     {
-        String message = "Bannissement appliqué sur " + toPseudo + " pour la raison " + sanction.getMotif() + ".";
+        String message = "Bannissement appliquÃ© sur " + toPseudo + " pour la raison " + sanction.getMotif() + ".";
         modMessage("Samaritan", ChatColor.DARK_RED, message);
 
         Jedis jedis = API.getBungeeResource();

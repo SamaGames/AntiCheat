@@ -2,6 +2,7 @@ package net.samagames.samaritan.listeners;
 
 import net.samagames.samaritan.Samaritan;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -13,7 +14,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
  * (C) Copyright Elydra Network 2014 & 2015
  * All rights reserved.
  */
-public class ConnectionListener
+public class ConnectionListener implements Listener
 {
     private final Samaritan plugin;
 

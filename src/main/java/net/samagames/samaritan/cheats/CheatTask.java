@@ -22,6 +22,7 @@ public class CheatTask
         this.doTask = doTask;
         this.poolExecutor = Executors.newScheduledThreadPool(1);
 
+        System.out.println("Adding task " + player.getDisplayName());
         if (doTask)
             this.poolExecutor.scheduleAtFixedRate(this::run, this.getInitialTime(), this.getRunInterval(), TimeUnit.MILLISECONDS);
     }
@@ -65,7 +66,7 @@ public class CheatTask
 
     public long getInitialTime()
     {
-        return 3000L;
+        return 20L;
     }
 
 }
