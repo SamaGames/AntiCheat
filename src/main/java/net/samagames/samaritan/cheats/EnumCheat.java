@@ -14,7 +14,7 @@ import net.samagames.samaritan.cheats.killaura.KillAuraTask;
 public enum EnumCheat
 {
     KILLAURA("KillAura", "ForceField/KillAura", KillAuraTask.class, KillAura.class, false),
-    ANTI("Anti*", "AntiPotion/AntiFire", null, AntiPF.class, false),
+    ANTI("Anti*", "AntiPotion/AntiFire", null, AntiPF.class, true),
     FASTBOW("FASTBOW", "FASBOW", null, CheatModule.class, true);
 
     private final String identifier;

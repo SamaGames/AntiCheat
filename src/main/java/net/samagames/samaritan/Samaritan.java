@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.samagames.api.shadows.ShadowsAPI;
 import net.samagames.samaritan.cheats.CheatTask;
 import net.samagames.samaritan.cheats.EnumCheat;
+import net.samagames.samaritan.cheats.command.CommandSamaritan;
 import net.samagames.samaritan.listeners.ConnectionListener;
 import net.samagames.samaritan.player.VirtualPlayer;
 import net.samagames.tools.JsonConfiguration;
@@ -42,6 +43,7 @@ public class Samaritan extends JavaPlugin
         punishmentsManager = new PunishmentsManager(this);
         connectionListener = new ConnectionListener(this);
         this.getServer().getPluginManager().registerEvents(connectionListener, this);
+        Bukkit.getPluginCommand("samaritan").setExecutor(new CommandSamaritan());
 
 
         this.saveResource("config.json", false);
