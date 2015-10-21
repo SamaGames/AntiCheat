@@ -67,18 +67,8 @@ public class AntiPF extends CheatModule implements IPacketListener, Runnable
         VirtualPlayer vPlayer = VirtualPlayer.getVirtualPlayer(player);
         if (packet instanceof PacketPlayer)
         {
-            PacketPlayer playerPacket = (PacketPlayer) packet;
             String packetName = packet.getClass().getSimpleName();
-
             vPlayer.increasePacketCounter(packetName);
-
-            if (player.getFallDistance() > 0 && playerPacket.isOnGround())
-            {
-                // Async, get the instance
-                samaritan.getLogger().info("Fixing possible NoFall hack for player " + player);
-                playerPacket.setOnGround(false);
-                playerPacket.markDirty();
-            }
         }
         else if (packet instanceof PacketBlockDig)
         {
