@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'sonar-runner'
 
 group = 'net.samagames'
 version = '3.0.0'
@@ -32,6 +33,15 @@ repositories {
     }
 }
 
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", group + "." + archivesBaseName
+        property "sonar.projectName", archivesBaseName
+
+        property "sonar.login", sonaruser
+        property "sonar.password", sonarpass
+    }
+}
 
 dependencies {
     compile(group: 'org.spigotmc', name: 'spigot', version: '1.8.8-R0.1-SNAPSHOT', changing: true) {
