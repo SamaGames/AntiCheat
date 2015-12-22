@@ -8,6 +8,7 @@ import net.samagames.api.shadows.EnumPacket;
 import net.samagames.api.shadows.IPacketListener;
 import net.samagames.api.shadows.Packet;
 import net.samagames.api.shadows.play.server.PacketChunkData;
+import net.samagames.api.shadows.play.server.PacketChunkDataBulk;
 import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.CheatModule;
 import org.bukkit.Bukkit;
@@ -18,7 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,7 +33,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
     // Used to select a random replacement ore
     private final byte[] replacementOres;
 
-    private byte[][][] bufferCache = new byte[ Integer.MAX_VALUE ][ Integer.MAX_VALUE ][];
+    //private byte[][][] bufferCache = new byte[ Integer.MAX_VALUE ][ Integer.MAX_VALUE ][];
 
     public AntiXRay() {
         // Set all listed blocks as true to be obfuscated
@@ -76,7 +77,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
     @Override
     public List<Class<? extends Packet>> getWhiteListedPackets()
     {
-        return Collections.singletonList(PacketChunkData.class);
+        return Arrays.asList(PacketChunkData.class, PacketChunkDataBulk.class);
     }
 
     @Override
@@ -91,6 +92,21 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                     chunkMap.b,
                     chunkMap.a,
                     ((CraftWorld)player.getWorld()).getHandle());
+            player.sendMessage("lol");
+        }else if (packet instanceof PacketChunkDataBulk)
+        {
+            PacketChunkDataBulk chunkData = (PacketChunkDataBulk) packet;
+            int length = chunkData.getLocsX().length;
+            for(int i = 0; i < length; i++)
+            {
+                PacketPlayOutMapChunk.ChunkMap chunkMap = chunkData.getChunksMap()[i];
+                obfuscate(chunkData.getLocsX()[i],
+                        chunkData.getLocsY()[i],
+                        chunkMap.b,
+                        chunkMap.a,
+                        ((CraftWorld)player.getWorld()).getHandle());
+            }
+            player.sendMessage("lol----");
         }
     }
 
@@ -202,7 +218,6 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                 }
             }
         }
-        //TODO: save cache
     }
 
     private void updateNearbyBlocks(World world, BlockPosition position, int radius, boolean updateSelf)
