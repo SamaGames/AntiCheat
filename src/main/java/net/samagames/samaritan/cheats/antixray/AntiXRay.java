@@ -4,6 +4,7 @@ import gnu.trove.set.TByteSet;
 import gnu.trove.set.hash.TByteHashSet;
 import io.netty.channel.Channel;
 import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_8_R3.World;
 import net.samagames.api.shadows.EnumPacket;
 import net.samagames.api.shadows.IPacketListener;
 import net.samagames.api.shadows.Packet;
@@ -11,16 +12,19 @@ import net.samagames.api.shadows.play.server.PacketChunkData;
 import net.samagames.api.shadows.play.server.PacketChunkDataBulk;
 import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.CheatModule;
-import org.bukkit.Bukkit;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.spigotmc.SpigotWorldConfig;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk.*;
 
 /**
  * Created by Silva on 22/12/2015.
@@ -33,30 +37,30 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
     // Used to select a random replacement ore
     private final byte[] replacementOres;
 
-    //private byte[][][] bufferCache = new byte[ Integer.MAX_VALUE ][ Integer.MAX_VALUE ][];
+    private static final int MAX_MAP_SIZE = 2000; //it's in chunk so
+    private ChunkMap[][] bufferCache = new ChunkMap[ MAX_MAP_SIZE ][ MAX_MAP_SIZE ];
 
     public AntiXRay() {
+        SpigotWorldConfig config = ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle().spigotConfig;
         // Set all listed blocks as true to be obfuscated
-        obfuscateBlocks[1] = true;
-        obfuscateBlocks[5] = true;
+
+        for ( int id : ( config.engineMode == 1 ) ? config.hiddenBlocks : config.replaceBlocks )
+        {
+            obfuscateBlocks[id] = true;
+        }
 
         // For every block
         TByteSet blocks = new TByteHashSet();
-
-        blocks.add((byte) (int) 14 );
-        blocks.add((byte) (int) 15 );
-        blocks.add((byte) (int) 16 );
-        blocks.add((byte) (int) 21 );
-        blocks.add((byte) (int) 48 );
-        blocks.add((byte) (int) 49 );
-        blocks.add((byte) (int) 54 );
-        blocks.add((byte) (int) 56 );
-        blocks.add((byte) (int) 73 );
-        blocks.add((byte) (int) 74 );
-        blocks.add((byte) (int) 82 );
-        blocks.add((byte) (int) 129 );
-        blocks.add((byte) (int) 130 );
-
+        for ( Integer i : config.hiddenBlocks )
+        {
+            Block block = Block.getById( i );
+            // Check it exists and is not a tile entity
+            if ( block != null && !block.isTileEntity() )
+            {
+                // Add it to the set of replacement blocks
+                blocks.add( (byte) (int) i );
+            }
+        }
         // Bake it to a flat array of replacements
         replacementOres = blocks.toArray();
     }
@@ -86,27 +90,42 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
         if (packet instanceof PacketChunkData)
         {
             PacketChunkData chunkData = (PacketChunkData) packet;
-            PacketPlayOutMapChunk.ChunkMap chunkMap = chunkData.getChunkMap();
-            obfuscate(chunkData.getLocX(),
-                    chunkData.getLocY(),
-                    chunkMap.b,
-                    chunkMap.a,
-                    ((CraftWorld)player.getWorld()).getHandle());
-            player.sendMessage("lol");
+            ChunkMap chunkMap = chunkData.getChunkMap();
+            int locX = chunkData.getLocX();
+            int locY = chunkData.getLocY();
+            ChunkMap cache = getCachedChunk(locX, locY);
+            if(cache == null)
+            {
+                obfuscate(locX,
+                        locY,
+                        chunkMap.b,
+                        chunkMap.a,
+                        ((CraftWorld)player.getWorld()).getHandle());
+            }else{
+                chunkData.getChunkMap().a = cache.a;
+                chunkData.getChunkMap().b = cache.b;
+            }
         }else if (packet instanceof PacketChunkDataBulk)
         {
             PacketChunkDataBulk chunkData = (PacketChunkDataBulk) packet;
             int length = chunkData.getLocsX().length;
             for(int i = 0; i < length; i++)
             {
-                PacketPlayOutMapChunk.ChunkMap chunkMap = chunkData.getChunksMap()[i];
-                obfuscate(chunkData.getLocsX()[i],
-                        chunkData.getLocsY()[i],
-                        chunkMap.b,
-                        chunkMap.a,
-                        ((CraftWorld)player.getWorld()).getHandle());
+                ChunkMap chunkMap = chunkData.getChunksMap()[i];
+                int locX = chunkData.getLocsX()[i];
+                int locY = chunkData.getLocsY()[i];
+                ChunkMap cache = getCachedChunk(locX, locY);
+                if(cache == null)
+                {
+                    obfuscate(locX,
+                            locY,
+                            chunkMap.b,
+                            chunkMap.a,
+                            ((CraftWorld)player.getWorld()).getHandle());
+                }else{
+                    chunkData.getChunksMap()[i] = cache;
+                }
             }
-            player.sendMessage("lol----");
         }
     }
 
@@ -118,7 +137,23 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
             updateNearbyBlocks(((CraftWorld)event.getBlock().getWorld()).getHandle(), new BlockPosition(event.getBlock().getX(),
                     event.getBlock().getY(),
                     event.getBlock().getZ()));
+            resetCacheFor(event.getBlock().getChunk().getX(), event.getBlock().getChunk().getZ());
         }
+    }
+
+    public void resetCacheFor(int x, int z)
+    {
+        bufferCache[x + (MAX_MAP_SIZE/2)][z + (MAX_MAP_SIZE/2)] = null;
+    }
+
+    public ChunkMap getCachedChunk(int x, int z)
+    {
+        return bufferCache[x + (MAX_MAP_SIZE/2)][z + (MAX_MAP_SIZE/2)];
+    }
+
+    public void setCachedChunk(int x, int z, ChunkMap chunkMap)
+    {
+        bufferCache[x + (MAX_MAP_SIZE/2)][z + (MAX_MAP_SIZE/2)] = chunkMap;
     }
 
 
@@ -199,12 +234,21 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                                 if ( !hasTransparentBlockAdjacent( world, new BlockPosition( startX + x, ( i << 4 ) + y, startZ + z ), initialRadius ) )
                                 {
                                     int newId = blockId;
-                                    // Replace with random ore.
-                                    if ( randomOre >= replacementOres.length )
+                                    switch ( world.spigotConfig.engineMode )
                                     {
-                                        randomOre = 0;
+                                        case 1:
+                                            // Replace with replacement material
+                                            newId = replaceWithTypeId & 0xFF;
+                                            break;
+                                        case 2:
+                                            // Replace with random ore.
+                                            if ( randomOre >= replacementOres.length )
+                                            {
+                                                randomOre = 0;
+                                            }
+                                            newId = replacementOres[randomOre++] & 0xFF;
+                                            break;
                                     }
-                                    newId = replacementOres[randomOre++] & 0xFF;
 
                                     newId <<= 4;
                                     buffer[index << 1] = (byte) (newId & 0xFF);
