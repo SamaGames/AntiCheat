@@ -125,7 +125,7 @@ public class AntiPF extends CheatModule implements IPacketListener, Runnable
     @Override
     public void run()
     {
-        for (String packetName : LISTENED_PACKET.keySet())
+        for (final String packetName : LISTENED_PACKET.keySet())
         {
             Long lastTime = PACKET_TIMER.getOrDefault(packetName, -1L);
             if ((System.currentTimeMillis() - lastTime) > 10000)
