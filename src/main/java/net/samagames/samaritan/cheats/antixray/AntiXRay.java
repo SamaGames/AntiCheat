@@ -177,7 +177,6 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
         bufferCache[x + (MAX_MAP_SIZE/2)][z + (MAX_MAP_SIZE/2)] = chunkMap;
     }
 
-
     /**
      * Starts the timings handler, then updates all blocks within the set radius
      * of the given coordinate, revealing them if they are hidden ores.
@@ -218,6 +217,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                 replaceWithTypeId = (byte) CraftMagicNumbers.getId(Blocks.STONE);
                 break;
         }
+        boolean done = false;
 
         // Chunks can have up to 16 sections
         for ( int i = 0; i < 16; i++ )
@@ -236,7 +236,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                             if ( index >= buffer.length )
                             {
                                 index++;
-                                continue;
+                                return;
                             }
                             // Grab the block ID in the buffer.
                             int blockId = (buffer[index << 1] & 0xFF)
