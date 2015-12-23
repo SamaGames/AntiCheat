@@ -2,10 +2,7 @@ package net.samagames.samaritan.cheats.antixray;
 
 import gnu.trove.set.TByteSet;
 import gnu.trove.set.hash.TByteHashSet;
-import net.minecraft.server.v1_8_R3.Block;
-import net.minecraft.server.v1_8_R3.BlockPosition;
-import net.minecraft.server.v1_8_R3.Blocks;
-import net.minecraft.server.v1_8_R3.World;
+import net.minecraft.server.v1_8_R3.*;
 import org.apache.commons.lang3.tuple.Triple;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
@@ -15,8 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 import org.spigotmc.SpigotWorldConfig;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +27,8 @@ public class ChunkCache implements Listener {
     // Used to select a random replacement ore
     private final byte[] replacementOres;
 
-    ConcurrentHashMap<Triple<Integer, Integer, String>, byte[][][]> cache = new ConcurrentHashMap<>();
+    //private final ConcurrentHashMap<Triple<Integer, Integer, String>, byte[][][]> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Triple<Integer, Integer, String>, char[]> cache = new ConcurrentHashMap<>();
 
     public ChunkCache()
     {
@@ -60,31 +56,6 @@ public class ChunkCache implements Listener {
         replacementOres = blocks.toArray();
     }
 
-    @EventHandler
-    public void onChunkLoad(ChunkLoadEvent event)
-    {
-        int locX = event.getChunk().getX();
-        int locY = event.getChunk().getZ();
-        /*Bukkit.getScheduler().runTaskAsynchronously(Samaritan.get(), () -> {
-            try {
-                loadChunk(((CraftWorld)event.getWorld()).getHandle(), locX, locY);
-            }catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        });*/
-    }
-
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent event)
-    {
-        int locX = event.getChunk().getX();
-        int locY = event.getChunk().getZ();
-
-        //Bukkit.getScheduler().runTask(Samaritan.get(), () -> );
-        //unloadChunk(((CraftWorld)event.getWorld()).getHandle(), locX, locY);
-    }
-
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBlockBreak(BlockBreakEvent event)
     {
@@ -100,17 +71,62 @@ public class ChunkCache implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onBlockPhysic(BlockPhysicsEvent event)
     {
-        /*if(event.getChangedType().equals(Material.AIR))
-            updateBlock(event.getBlock());*/
+        if(event.getChangedType().equals(Material.AIR))
+            updateBlock(event.getBlock());
     }
 
-    public byte[][][] getCache(World world, int cx, int cy)
+    public char[] getCache(World world, int cx, int cy)
     {
         if(cache.containsKey(Triple.of(cx, cy, world.getWorld().getName())))
         {
             return cache.get(Triple.of(cx, cy, world.getWorld().getName()));
         }else{
-            return loadChunk(world, cx, cy);
+            return loadChunk(world, cx, cy, 0, new byte[0]);
+        }
+    }
+
+    public void applyCache(World world, int cx, int cy, int bitmask, byte[] buffer)
+    {
+        if(cache.containsKey(Triple.of(cx, cy, world.getWorld().getName())))
+        {
+            char[] bytes = cache.get(Triple.of(cx, cy, world.getWorld().getName()));
+            int index = 0;
+
+            // Chunks can have up to 16 sections
+            for ( int i = 0; i < 16; i++ )
+            {
+                // If the bitmask indicates this chunk is sent...
+                if ( ( bitmask & 1 << i ) != 0 )
+                {
+                    // Work through all blocks in the chunk, y,z,x
+                    for ( int y = 0; y < 16; y++ )
+                    {
+                        for ( int z = 0; z < 16; z++ )
+                        {
+                            for ( int x = 0; x < 16; x++ )
+                            {
+                                // For some reason we can get too far ahead of ourselves (concurrent modification on bulk chunks?) so if we do, just abort and move on
+                                if ( index >= buffer.length )
+                                {
+                                    index++;
+                                    continue;
+                                }
+                                if(bytes[(( i << 4 ) + y) << 8 | z << 4 | x] >> 4 != -1)
+                                {
+                                    int newId = (bytes[(( i << 4 ) + y) << 8 | z << 4 | x] >> 4) & 0xFF;
+                                    newId <<= 4;
+                                    buffer[index << 1] = (byte) (newId & 0xFF);
+                                    buffer[(index << 1) + 1] = (byte) ((newId >> 8) & 0xFF);
+                                }
+
+                                index++;
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            loadChunk(world, cx, cy, bitmask, buffer);
         }
     }
 
@@ -119,10 +135,11 @@ public class ChunkCache implements Listener {
         cache.remove(Triple.of(cx, cy, world.getWorld().getName()));
     }
 
-    public byte[][][] loadChunk(World world, int cx, int cy)
+    public char[] loadChunk(World world, int cx, int cy, int bitmask, byte[] buffer)
     {
         //HashMap<Triple<Integer, Integer, Integer>, Byte> patch = new HashMap<>();
-        byte[][][] patch1 = new byte[16][256][16];
+        //byte[][][] patch1 = new byte[16][256][16];
+        char[] patch = new char[4096*16];
         // If the world is marked as obfuscated
 
         // Initial radius to search around for air
@@ -136,55 +153,69 @@ public class ChunkCache implements Listener {
         int startX = cx << 4;
         int startZ = cy << 4;
 
-        //load bear chunk
-        world.getChunkAt(cx+1, cy);
-        world.getChunkAt(cx-1, cy);
-        world.getChunkAt(cx, cy+1);
-        world.getChunkAt(cx, cy-1);
-        for(int x = 0; x < 16; x++)
+        ChunkSection[] sections = world.getChunkAt(cx, cy).getSections();
+        // Chunks can have up to 16 sections
+        for ( int i = 0; i < 16; i++ )
         {
-            for(int y = 0; y < 256; y++)
+            ChunkSection section = sections[i];
+            if(section == null)
+                continue;
+
+            char[] idArray = section.getIdArray();
+            // If the bitmask indicates this chunk is sent...
+            boolean needSection = ( bitmask & 1 << i ) != 0;
+            //load bear chunk
+            for(int y = 0; y < 16; y++)
             {
                 for(int z = 0; z < 16; z++)
                 {
-                    byte newId = -1;
-                    // int blockId = idArray[y << 8 | z << 4 | x];
-                    //Samaritan.get().getLogger().info("" + blockId);
-                    if (obfuscateBlocks[Block.getId( world.getType(new BlockPosition(startX + x, y, startZ + z)).getBlock() )] )
+                    for(int x = 0; x < 16; x++)
                     {
-                        // On the otherhand, if radius is 0, or the nearby blocks are all non air, we can obfuscate
-                        if ( !hasTransparentBlockAdjacent( world, new BlockPosition( startX + x, y, startZ + z ), initialRadius ) )
+                        byte newId = -1;
+                         int blockId = idArray[y << 8 | z << 4 | x] >> 4;
+                        //Samaritan.get().getLogger().info("" + blockId);
+                        //if (obfuscateBlocks[Block.getId( world.getType(new BlockPosition(startX + x, ( i << 4 ) + y, startZ + z)).getBlock() )] )
+                        if (obfuscateBlocks[blockId] && isLoaded( world, new BlockPosition( startX + x, ( i << 4 ) + y, startZ + z ), initialRadius ) )
                         {
-                            // Replace with random ore.
-                            if ( randomOre >= replacementOres.length )
+                            // On the otherhand, if radius is 0, or the nearby blocks are all non air, we can obfuscate
+                            if ( !hasTransparentBlockAdjacent( world, new BlockPosition( startX + x, ( i << 4 ) + y, startZ + z ), initialRadius ) )
                             {
-                                randomOre = 0;
-                            }
-                            newId = replacementOres[randomOre++] ;
+                                // Replace with random ore.
+                                if ( randomOre >= replacementOres.length )
+                                {
+                                    randomOre = 0;
+                                }
+                                newId = replacementOres[randomOre++] ;
 
-                            //patch.put(Triple.of(x,( i << 4 )+y,z), newId);
+                                //patch.put(Triple.of(x,( i << 4 )+y,z), newId);
+                                if (needSection &&  index < buffer.length )
+                                {
+                                    int tnewId = newId << 4;
+                                    buffer[index << 1] = (byte) (tnewId & 0xFF);
+                                    buffer[(index << 1) + 1] = (byte) ((tnewId >> 8) & 0xFF);
+
+                                }
+                            }
                         }
+                        //patch1[x][( i << 4 ) + y][z] = newId;
+                        patch[y << 8 | z << 4 | x] = (char) (newId << 4);
+
+                        index++;
                     }
-                    patch1[x][y][z] = newId;
                 }
             }
         }
-
-
-        cache.put(Triple.of(cx, cy, world.getWorld().getName()), patch1);
-        return patch1;
+        cache.put(Triple.of(cx, cy, world.getWorld().getName()), patch);
+        return patch;
     }
 
     private void updateBlock(org.bukkit.block.Block block)
     {
-        /*Bukkit.getScheduler().runTaskAsynchronously(Samaritan.get(), new Runnable() {
-            @Override
-            public void run() {*/
-                updateNearbyBlocks(((CraftWorld)block.getWorld()).getHandle(), new BlockPosition(block.getX(),
-                        block.getY(),
-                        block.getZ()));/*
-            }
-        });*/
+
+        updateNearbyBlocks(((CraftWorld)block.getWorld()).getHandle(), new BlockPosition(block.getX(),
+                block.getY(),
+                block.getZ()));
+
 
         //loadChunk(((CraftWorld)block.getWorld()).getHandle(), block.getChunk().getX(), block.getChunk().getZ());
     }
@@ -200,7 +231,7 @@ public class ChunkCache implements Listener {
         int localX = position.getX() & 15;
         int localZ = position.getZ() & 15;
         cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
-                world.getWorld().getName()))[localX][position.getY()][localZ] = (byte) 0;
+                world.getWorld().getName()))[position.getY() << 8 | localZ << 4 | localX] = (char) 0;
     }
 
     private void updateNearbyBlocks(World world, BlockPosition position, int radius, boolean updateSelf)
@@ -208,22 +239,26 @@ public class ChunkCache implements Listener {
         // If the block in question is loaded
         if ( world.isLoaded( position ) )
         {
+            int x = position.getX() & 15;
+            int y = position.getX() & 15;
+            int z = position.getX() & 15;
             // Get block id
-            Block block = world.getType(position).getBlock();
-            int id = Block.getId( block );
-            // See if it needs update
-
-            if (updateSelf  && obfuscateBlocks[id])
+            ChunkSection section = world.getChunkAtWorldCoords(position).getSections()[position.getY() >> 4];
+            if(section != null)
             {
-                // Send the update
-                world.notify( position );
-                //Save the update
-                int localX = position.getX() & 15;
-                int localZ = position.getZ() & 15;
-                cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
-                        world.getWorld().getName()))[localX][position.getY()][localZ] = (byte) id;
+                int id = section.getIdArray()[y << 8 | z << 4 | x] >> 4;
+                // See if it needs update
+                if (updateSelf  && obfuscateBlocks[id])
+                {
+                    // Send the update
+                    world.notify( position );
+                    //Save the update
+                    int localX = position.getX() & 15;
+                    int localZ = position.getZ() & 15;
+                    cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
+                            world.getWorld().getName()))[position.getY() << 8 | localZ << 4 | localX] = (char) (id << 4);
+                }
             }
-
             // Check other blocks for updates
             if ( radius > 0 )
             {
@@ -261,6 +296,12 @@ public class ChunkCache implements Listener {
     private static boolean isLoaded(World world, BlockPosition position, int radius)
     {
         return world.isLoaded( position )
-                && world.getChunkAtWorldCoords(position).areNeighborsLoaded(radius);
+                && ( radius == 0 ||
+                ( isLoaded( world, position.east(), radius - 1 )
+                        && isLoaded( world, position.west(), radius - 1 )
+                        && isLoaded( world, position.up(), radius - 1 )
+                        && isLoaded( world, position.down(), radius - 1 )
+                        && isLoaded( world, position.south(), radius - 1 )
+                        && isLoaded( world, position.north(), radius - 1 ) ) );
     }
 }

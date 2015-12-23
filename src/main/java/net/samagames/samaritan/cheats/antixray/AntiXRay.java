@@ -89,41 +89,6 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
      */
     public void obfuscate(int chunkX, int chunkY, int bitmask, byte[] buffer, World world)
     {
-        byte[][][] cache = this.cache.getCache(world, chunkX, chunkY);
-        int index = 0;
-
-        // Chunks can have up to 16 sections
-        for ( int i = 0; i < 16; i++ )
-        {
-            // If the bitmask indicates this chunk is sent...
-            if ( ( bitmask & 1 << i ) != 0 )
-            {
-                // Work through all blocks in the chunk, y,z,x
-                for ( int y = 0; y < 16; y++ )
-                {
-                    for ( int z = 0; z < 16; z++ )
-                    {
-                        for ( int x = 0; x < 16; x++ )
-                        {
-                            // For some reason we can get too far ahead of ourselves (concurrent modification on bulk chunks?) so if we do, just abort and move on
-                            if ( index >= buffer.length )
-                            {
-                                index++;
-                                continue;
-                            }
-                            if(cache[x][ ( i << 4 ) + y] [z] != -1)
-                            {
-                                int newId = cache[x][ ( i << 4 ) + y] [z] & 0xFF;
-                                newId <<= 4;
-                                buffer[index << 1] = (byte) (newId & 0xFF);
-                                buffer[(index << 1) + 1] = (byte) ((newId >> 8) & 0xFF);
-                            }
-
-                            index++;
-                        }
-                    }
-                }
-            }
-        }
+        this.cache.applyCache(world, chunkX, chunkY, bitmask, buffer);
     }
 }
