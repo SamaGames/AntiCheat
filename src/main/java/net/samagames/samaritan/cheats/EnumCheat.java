@@ -1,7 +1,7 @@
 package net.samagames.samaritan.cheats;
 
 import net.samagames.samaritan.cheats.antiprf.AntiPF;
-import net.samagames.samaritan.cheats.antixray.Orebfuscator;
+import net.samagames.samaritan.cheats.antixray.AntiXRay;
 import net.samagames.samaritan.cheats.killaura.KillAura;
 import net.samagames.samaritan.cheats.killaura.KillAuraTask;
 
@@ -17,7 +17,7 @@ public enum EnumCheat
     KILLAURA("KillAura", "ForceField/KillAura", KillAuraTask.class, KillAura.class, false),
     ANTI("Anti*", "AntiPotion/AntiFire", null, AntiPF.class, true),
     FASTBOW("FASTBOW", "FASBOW", null, CheatModule.class, true),
-    ANTIXRAY("AntiXray", "AntiXray", null, Orebfuscator.class, true);
+    ANTIXRAY("AntiXray", "AntiXray", null, AntiXRay.class, true);
 
     private final String identifier;
     private final String banReason;
