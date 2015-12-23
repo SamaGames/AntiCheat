@@ -196,6 +196,11 @@ public class ChunkCache implements Listener {
     public void updateNearbyBlocks(World world, BlockPosition position)
     {
         updateNearbyBlocks( world, position, 2, false ); // 2 is the radius, we shouldn't change it as that would make it exponentially slower
+        //Save the update
+        int localX = position.getX() & 15;
+        int localZ = position.getZ() & 15;
+        cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
+                world.getWorld().getName()))[localX][position.getY()][localZ] = (byte) 0;
     }
 
     private void updateNearbyBlocks(World world, BlockPosition position, int radius, boolean updateSelf)
@@ -212,13 +217,12 @@ public class ChunkCache implements Listener {
             {
                 // Send the update
                 world.notify( position );
+                //Save the update
+                int localX = position.getX() & 15;
+                int localZ = position.getZ() & 15;
+                cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
+                        world.getWorld().getName()))[localX][position.getY()][localZ] = (byte) id;
             }
-
-            //Save the update
-            int localX = position.getX() & 15;
-            int localZ = position.getZ() & 15;
-            cache.get(Triple.of(position.getX() >> 4, position.getZ() >> 4,
-                    world.getWorld().getName()))[localX][position.getY()][localZ] = (byte) ((updateSelf)?id:0);
 
             // Check other blocks for updates
             if ( radius > 0 )
