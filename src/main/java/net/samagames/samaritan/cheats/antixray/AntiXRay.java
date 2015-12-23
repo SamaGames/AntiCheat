@@ -3,28 +3,31 @@ package net.samagames.samaritan.cheats.antixray;
 import gnu.trove.set.TByteSet;
 import gnu.trove.set.hash.TByteHashSet;
 import io.netty.channel.Channel;
-import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_8_R3.Block;
+import net.minecraft.server.v1_8_R3.BlockPosition;
+import net.minecraft.server.v1_8_R3.Blocks;
 import net.minecraft.server.v1_8_R3.World;
 import net.samagames.api.shadows.EnumPacket;
 import net.samagames.api.shadows.IPacketListener;
 import net.samagames.api.shadows.Packet;
+import net.samagames.api.shadows.play.server.PacketBlockChange;
 import net.samagames.api.shadows.play.server.PacketChunkData;
 import net.samagames.api.shadows.play.server.PacketChunkDataBulk;
 import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.CheatModule;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockEvent;
 import org.spigotmc.SpigotWorldConfig;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk.*;
+import static net.minecraft.server.v1_8_R3.PacketPlayOutMapChunk.ChunkMap;
 
 /**
  * Created by Silva on 22/12/2015.
@@ -81,7 +84,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
     @Override
     public List<Class<? extends Packet>> getWhiteListedPackets()
     {
-        return Arrays.asList(PacketChunkData.class, PacketChunkDataBulk.class);
+        return Arrays.asList(PacketChunkData.class, PacketChunkDataBulk.class, PacketBlockChange.class);
     }
 
     @Override
@@ -101,6 +104,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                         chunkMap.b,
                         chunkMap.a,
                         ((CraftWorld)player.getWorld()).getHandle());
+                setCachedChunk(locX, locY, chunkMap);
             }else{
                 chunkData.getChunkMap().a = cache.a;
                 chunkData.getChunkMap().b = cache.b;
@@ -122,6 +126,7 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
                             chunkMap.b,
                             chunkMap.a,
                             ((CraftWorld)player.getWorld()).getHandle());
+                    setCachedChunk(locX, locY, chunkMap);
                 }else{
                     chunkData.getChunksMap()[i] = cache;
                 }
@@ -129,16 +134,14 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
         }
     }
 
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event)
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockBreak(BlockEvent event)
     {
-        if(!event.isCancelled())
-        {
-            updateNearbyBlocks(((CraftWorld)event.getBlock().getWorld()).getHandle(), new BlockPosition(event.getBlock().getX(),
-                    event.getBlock().getY(),
-                    event.getBlock().getZ()));
-            resetCacheFor(event.getBlock().getChunk().getX(), event.getBlock().getChunk().getZ());
-        }
+        updateNearbyBlocks(((CraftWorld)event.getBlock().getWorld()).getHandle(), new BlockPosition(event.getBlock().getX(),
+                event.getBlock().getY(),
+                event.getBlock().getZ()));
+        resetCacheFor(event.getBlock().getChunk().getX(), event.getBlock().getChunk().getZ());
+
     }
 
     public void resetCacheFor(int x, int z)
