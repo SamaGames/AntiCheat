@@ -21,7 +21,9 @@ import org.bukkit.craftbukkit.v1_8_R3.util.CraftMagicNumbers;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockEvent;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.spigotmc.SpigotWorldConfig;
 
 import java.util.Arrays;
@@ -135,13 +137,29 @@ public class AntiXRay extends CheatModule implements IPacketListener, Listener
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onBlockBreak(BlockEvent event)
+    public void onBlockBreak(BlockBreakEvent event)
     {
-        updateNearbyBlocks(((CraftWorld)event.getBlock().getWorld()).getHandle(), new BlockPosition(event.getBlock().getX(),
-                event.getBlock().getY(),
-                event.getBlock().getZ()));
-        resetCacheFor(event.getBlock().getChunk().getX(), event.getBlock().getChunk().getZ());
+        update(event.getBlock());
+    }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockExplode(BlockExplodeEvent event)
+    {
+        update(event.getBlock());
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockBreak(BlockPhysicsEvent event)
+    {
+        update(event.getBlock());
+    }
+
+    private void update(org.bukkit.block.Block block)
+    {
+        updateNearbyBlocks(((CraftWorld)block.getWorld()).getHandle(), new BlockPosition(block.getX(),
+                block.getY(),
+                block.getZ()));
+        resetCacheFor(block.getChunk().getX(), block.getChunk().getZ());
     }
 
     public void resetCacheFor(int x, int z)
