@@ -39,7 +39,7 @@ public class OrebfuscatorConfig {
     public static boolean UpdateOnDamage = true;
     public static int EngineMode = 2;
     public static int InitialRadius = 1;
-    public static int UpdateRadius = 2;
+    public static int UpdateRadius = 3;
     public static int OrebfuscatorPriority = 1;
     public static int CompressionLevel = 1;
     public static int ProcessingThreads = AvailableProcessors - 1;

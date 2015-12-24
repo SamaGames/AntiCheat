@@ -7,8 +7,11 @@ import net.samagames.api.shadows.Packet;
 import net.samagames.api.shadows.play.client.PacketBlockDig;
 import net.samagames.api.shadows.play.server.PacketChunkData;
 import net.samagames.samaritan.cheats.antixray.hithack.BlockHitManager;
+import net.samagames.samaritan.cheats.antixray.obfuscation.BlockUpdate;
 import net.samagames.samaritan.cheats.antixray.obfuscation.Calculations;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +39,13 @@ public class ShadowHook implements IPacketListener {
                 if (!BlockHitManager.hitBlock(player, null)) {
                     //can't cancel packet
                 }
+
+            }
+            if(status == PacketBlockDig.DigType.START_DESTROY_BLOCK)
+            {
+                Vector vector = ((PacketBlockDig) packet).getPosition();
+                Location location = new Location(player.getWorld(), vector.getX(), vector.getY(), vector.getZ());
+                BlockUpdate.Update(location.getBlock());
             }
         }
 

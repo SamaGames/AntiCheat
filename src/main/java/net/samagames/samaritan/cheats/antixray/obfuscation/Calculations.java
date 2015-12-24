@@ -422,60 +422,6 @@ public class Calculations {
         }
     }
 
-    /*public static boolean areAjacentBlocksTransparent(ChunkInfo info, int currentBlockID, int x, int y, int z, int countdown) {
-        int id = 0;
-        boolean foundID = false;
-
-        if (y >= info.world.getMaxHeight() || y < 0)
-            return true;
-
-        int section = info.sectionIndices[y >> 4];
-
-        if ((info.chunkMask & (1 << (y >> 4))) > 0 && x >> 4 == info.chunkX && z >> 4 == info.chunkZ) {
-            int cX = ((x % 16) < 0) ? (x % 16 + 16) : (x % 16);
-            int cZ = ((z % 16) < 0) ? (z % 16 + 16) : (z % 16);
-
-            int index = section * BLOCKS_PER_SECTION + (y % 16 << 8) + (cZ << 4) + cX;
-            try {
-                id = chunkGetBlockId(info.original, index);
-                foundID = true;
-            } catch (Exception e) {
-                Orebfuscator.log(e);
-            }
-        }
-
-        if (!foundID) {
-            if (CalculationsUtil.isChunkLoaded(info.world, x >> 4, z >> 4)) {
-                id = info.world.getBlockTypeIdAt(x, y, z);
-            } else {
-                id = 1;
-                info.useCache = false;
-            }
-        }
-
-        if (id != currentBlockID && OrebfuscatorConfig.isBlockTransparent(id)) {
-            return true;
-        }
-
-        if (countdown == 0)
-            return false;
-
-        if (areAjacentBlocksTransparent(info, currentBlockID, x, y + 1, z, countdown - 1))
-            return true;
-        if (areAjacentBlocksTransparent(info, currentBlockID, x, y - 1, z, countdown - 1))
-            return true;
-        if (areAjacentBlocksTransparent(info, currentBlockID, x + 1, y, z, countdown - 1))
-            return true;
-        if (areAjacentBlocksTransparent(info, currentBlockID, x - 1, y, z, countdown - 1))
-            return true;
-        if (areAjacentBlocksTransparent(info, currentBlockID, x, y, z + 1, countdown - 1))
-            return true;
-        if (areAjacentBlocksTransparent(info, currentBlockID, x, y, z - 1, countdown - 1))
-            return true;
-
-        return false;
-    }*/
-
     private static boolean hasTransparentBlockAdjacent(World world, BlockPosition position, int radius)
     {
         return !isSolidBlock(world.getType(position, false).getBlock()) /* isSolidBlock */
