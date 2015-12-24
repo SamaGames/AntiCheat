@@ -63,7 +63,7 @@ public class OrebfuscatorConfig {
     public static boolean UseYLocationProximity = false;
 
     // AntiTexturePackAndFreecam
-    public static boolean AntiTexturePackAndFreecam = true;
+    public static boolean AntiTexturePackAndFreecam = false;
     public static int AirGeneratorMaxChance = 43;
 
     // Misc
