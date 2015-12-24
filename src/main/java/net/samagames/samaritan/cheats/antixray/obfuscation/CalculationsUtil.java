@@ -16,6 +16,7 @@
 
 package net.samagames.samaritan.cheats.antixray.obfuscation;
 
+import net.minecraft.server.v1_8_R3.BlockPosition;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -24,6 +25,10 @@ import java.util.zip.CRC32;
 public class CalculationsUtil {
     public static boolean isChunkLoaded(World world, int x, int z) {
         return world.isChunkLoaded(x, z);
+    }
+
+    public static boolean isChunkLoaded(net.minecraft.server.v1_8_R3.World world, BlockPosition position) {
+        return world.isLoaded(position);
     }
 
     public static Block getBlockAt(World world, int x, int y, int z) {

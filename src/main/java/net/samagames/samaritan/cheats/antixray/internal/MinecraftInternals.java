@@ -47,6 +47,10 @@ public class MinecraftInternals {
         ((CraftWorld) world).getHandle().notify(new BlockPosition(x, y, z));
     }
 
+    public static void notifyBlockChange(org.bukkit.World world, BlockPosition position) {
+        ((CraftWorld) world).getHandle().notify(position);
+    }
+
     public static void tryDisableSpigotAntiXray(org.bukkit.World world) {
         try {
             World mcworld = ((CraftWorld) world).getHandle();

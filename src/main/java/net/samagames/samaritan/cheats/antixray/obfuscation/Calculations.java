@@ -16,9 +16,12 @@
 
 package net.samagames.samaritan.cheats.antixray.obfuscation;
 
+import net.minecraft.server.v1_8_R3.BlockPosition;
+import net.minecraft.server.v1_8_R3.Blocks;
+import net.minecraft.server.v1_8_R3.World;
+import net.minecraft.server.v1_8_R3.WorldServer;
 import net.samagames.api.shadows.play.server.PacketChunkData;
 import net.samagames.api.shadows.play.server.PacketChunkDataBulk;
-import net.samagames.samaritan.cheats.antixray.Orebfuscator;
 import net.samagames.samaritan.cheats.antixray.OrebfuscatorConfig;
 import net.samagames.samaritan.cheats.antixray.cache.ObfuscatedCachedChunk;
 import net.samagames.samaritan.cheats.antixray.internal.ChunkData;
@@ -26,6 +29,7 @@ import net.samagames.samaritan.cheats.antixray.internal.Packet51;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.entity.Player;
 
 import java.io.File;
@@ -242,12 +246,14 @@ public class Calculations {
                             obfuscate = false;
                             specialObfuscate = false;
 
+                            WorldServer worldServer = ((CraftWorld) info.world).getHandle();
+
                             // Check if the block should be obfuscated for the default engine modes
                             if (OrebfuscatorConfig.isObfuscated(blockId, environment)) {
                                 if (initialRadius == 0) {
                                     // Do not interfere with PH
                                     if (OrebfuscatorConfig.UseProximityHider && OrebfuscatorConfig.isProximityObfuscated(blockY, blockId)) {
-                                        if (!areAjacentBlocksTransparent(info, blockId, startX + x, blockY, startZ + z, 1)) {
+                                        if (!hasTransparentBlockAdjacent(worldServer, new BlockPosition(startX + x, blockY, startZ + z), 1)) {
                                             obfuscate = true;
                                         }
                                     } else {
@@ -256,7 +262,7 @@ public class Calculations {
                                     }
                                 } else {
                                     // Check if any nearby blocks are transparent
-                                    if (!areAjacentBlocksTransparent(info, blockId, startX + x, blockY, startZ + z, initialRadius)) {
+                                    if (!hasTransparentBlockAdjacent(worldServer, new BlockPosition(startX + x, blockY, startZ + z), initialRadius)) {
                                         obfuscate = true;
                                     }
                                 }
@@ -416,7 +422,7 @@ public class Calculations {
         }
     }
 
-    public static boolean areAjacentBlocksTransparent(ChunkInfo info, int currentBlockID, int x, int y, int z, int countdown) {
+    /*public static boolean areAjacentBlocksTransparent(ChunkInfo info, int currentBlockID, int x, int y, int z, int countdown) {
         int id = 0;
         boolean foundID = false;
 
@@ -468,6 +474,27 @@ public class Calculations {
             return true;
 
         return false;
+    }*/
+
+    private static boolean hasTransparentBlockAdjacent(World world, BlockPosition position, int radius)
+    {
+        return !isSolidBlock(world.getType(position, false).getBlock()) /* isSolidBlock */
+                || ( radius > 0
+                && ( hasTransparentBlockAdjacent( world, position.east(), radius - 1 )
+                || hasTransparentBlockAdjacent( world, position.west(), radius - 1 )
+                || hasTransparentBlockAdjacent( world, position.up(), radius - 1 )
+                || hasTransparentBlockAdjacent( world, position.down(), radius - 1 )
+                || hasTransparentBlockAdjacent( world, position.south(), radius - 1 )
+                || hasTransparentBlockAdjacent( world, position.north(), radius - 1 ) ) );
+    }
+
+    private static boolean isSolidBlock(net.minecraft.server.v1_8_R3.Block block) {
+        // Mob spawners are treated as solid blocks as far as the
+        // game is concerned for lighting and other tasks but for
+        // rendering they can be seen through therefor we special
+        // case them so that the antixray doesn't show the fake
+        // blocks around them.
+        return block.isOccluding() && block != Blocks.MOB_SPAWNER && block != Blocks.BARRIER;
     }
 
     public static boolean areAjacentBlocksBright(ChunkInfo info, int x, int y, int z, int countdown) {

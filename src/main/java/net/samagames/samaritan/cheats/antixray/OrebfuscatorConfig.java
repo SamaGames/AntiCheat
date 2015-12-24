@@ -45,7 +45,7 @@ public class OrebfuscatorConfig {
     public static int ProcessingThreads = AvailableProcessors - 1;
 
     // Darkness
-    public static boolean DarknessHideBlocks = false;
+    public static boolean DarknessHideBlocks = true;
 
     // Caching
     public static boolean UseCache = true;
