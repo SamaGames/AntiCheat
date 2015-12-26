@@ -58,12 +58,12 @@ public class OrebfuscatorConfig {
     public static int ProximityHiderDistance = 8;
     public static int ProximityHiderID = 1;
     public static int ProximityHiderEnd = 255;
-    public static boolean UseProximityHider = true;
-    public static boolean UseSpecialBlockForProximityHider = true;
+    public static boolean UseProximityHider = false;
+    public static boolean UseSpecialBlockForProximityHider = false;
     public static boolean UseYLocationProximity = false;
 
     // AntiTexturePackAndFreecam
-    public static boolean AntiTexturePackAndFreecam = false;
+    public static boolean AntiTexturePackAndFreecam = true;
     public static int AirGeneratorMaxChance = 43;
 
     // Misc
