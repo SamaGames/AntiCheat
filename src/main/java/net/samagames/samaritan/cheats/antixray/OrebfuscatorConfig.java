@@ -45,7 +45,7 @@ public class OrebfuscatorConfig {
     public static int ProcessingThreads = AvailableProcessors - 1;
 
     // Darkness
-    public static boolean DarknessHideBlocks = true;
+    public static boolean DarknessHideBlocks = false;
 
     // Caching
     public static boolean UseCache = true;
@@ -63,7 +63,7 @@ public class OrebfuscatorConfig {
     public static boolean UseYLocationProximity = false;
 
     // AntiTexturePackAndFreecam
-    public static boolean AntiTexturePackAndFreecam = true;
+    public static boolean AntiTexturePackAndFreecam = false;
     public static int AirGeneratorMaxChance = 43;
 
     // Misc
