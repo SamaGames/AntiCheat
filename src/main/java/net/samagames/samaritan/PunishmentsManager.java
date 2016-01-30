@@ -76,7 +76,7 @@ public class PunishmentsManager
     {
         if (cheat.isBeta())
         {
-            new JsonModMessage("Samaritan", ModChannel.REPORT, ChatColor.DARK_RED, player + "#####" + SamaGamesAPI.get().getGameManager() + "#####" + cheat.getBanReason()).send();
+            new JsonModMessage("Samaritan", ModChannel.REPORT, ChatColor.DARK_RED, player.getName() + "#####" + SamaGamesAPI.get().getServerName() + "#####" + cheat.getBanReason()).send();
         }
         else
         {
