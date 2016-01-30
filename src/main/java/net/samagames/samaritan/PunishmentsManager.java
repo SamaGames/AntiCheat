@@ -10,7 +10,9 @@ import net.samagames.restfull.response.ErrorResponse;
 import net.samagames.restfull.response.StatusResponse;
 import net.samagames.samaritan.cheats.BasicCheatLog;
 import net.samagames.samaritan.cheats.EnumCheat;
-import net.samagames.samaritan.util.JsonCaseLine;
+import net.samagames.samaritan.utils.JsonCaseLine;
+import net.samagames.tools.JsonModMessage;
+import net.samagames.tools.ModChannel;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -72,10 +74,9 @@ public class PunishmentsManager
 
     public void automaticBan(final OfflinePlayer player, final EnumCheat cheat, final BasicCheatLog log)
     {
-
         if (cheat.isBeta())
         {
-            ModerationTools.modMessage("Samaritan", net.md_5.bungee.api.ChatColor.RED, "Le joueur " + player.getName() + " est suspecté de : " + cheat.getBanReason());
+            new JsonModMessage("Samaritan", ModChannel.REPORT, ChatColor.DARK_RED, player + "#####" + SamaGamesAPI.get().getGameManager() + "#####" + cheat.getBanReason()).send();
         }
         else
         {

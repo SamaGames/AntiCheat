@@ -1,0 +1,51 @@
+[19:18:47] zyuiop: En gros l'anticheat fonctionnera par module.
+[19:18:52] zyuiop: Des classes à extend
+[19:18:55] <Thog/>: ça c'est bien <3
+[19:19:00] <Thog/>: API ANTI CHEAT
+[19:19:13] <Thog/>: EN VENTE CHEZ VOTRE SYSTADMIN
+[19:19:37] zyuiop: Ca sera un truc du genre
+AntiCheat.instance().registerCheatHandler(<Un objet>);
+[19:19:55] zyuiop: Et après le cheatHandler se démerde avec ses listeners
+[19:19:56] <Thog/>: VIRE MOI CE INSTANCE NERF NERF NERF
+[19:20:01] <Thog/>: getInstance
+[19:20:04] zyuiop: xD
+[19:20:07] <Thog/>: non
+[19:20:10] <Thog/>: shitHandler
+[19:20:13] <Thog/>: c'est mieu
+[19:20:15] <Thog/>: xD
+[19:20:23] zyuiop: xD
+[19:20:35] zyuiop: Après t'auras des méthodes
+[19:20:40] zyuiop: Pour récupérer des infos de cheat
+[19:20:44] zyuiop: Ah oui
+[19:20:45] zyuiop: Aussi
+[19:20:47] zyuiop: Un JSON
+[19:20:54] zyuiop: Un JSON de base CheatData
+[19:21:04] zyuiop: Et toi tu extends avec les paramètres de ton cheat
+[19:21:08] <Thog/>: hmm
+[19:21:11] <Thog/>: sympas
+[19:21:19] zyuiop: Après quand tu signales qu'un joueur cheat, ca enregistre ton CheatData dans la DB
+[19:21:55] zyuiop: CheatData :
+ -> uuid
+ -> time
+ -> latence
+ -> tps
+
+FlyCheatData extends CheatData
+ -> x
+ -> y
+ -> z
+ -> floorY
+[19:21:57] zyuiop: Ce genre de trucs
+[19:22:17] <Thog/>: Ouais
+[19:22:31] zyuiop: Pour le forcefield faut faire comme Likaos
+[19:22:41] zyuiop: Mais va falloir se démerder pour trouver le moyen de le faire ^^
+[19:23:17] zyuiop: ~ Liste de cheats à contrer : ~
+-> Fly
+//-> Forcefield
+-> RapidBowShot
+-> FastFoodRegen
+//-> AimBot
+-> SpeedHack
+-> XRAY ?
+[19:23:58] zyuiop: Aucun blockage de cheat, détection uniquement
+[19:24:31] zyuiop: On log toutes les alertes, même si elles entrainent pas le ban parce qu'on est pas sûr à 100%

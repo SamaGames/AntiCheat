@@ -1,10 +1,10 @@
 package net.samagames.samaritan;
 
-import com.google.gson.Gson;
-import net.md_5.bungee.api.ChatColor;
 import net.samagames.api.SamaGamesAPI;
-import net.samagames.samaritan.util.JsonCaseLine;
+import net.samagames.samaritan.utils.JsonCaseLine;
 import net.samagames.tools.JsonModMessage;
+import net.samagames.tools.ModChannel;
+import org.bukkit.ChatColor;
 import redis.clients.jedis.Jedis;
 
 import java.util.UUID;
@@ -33,23 +33,10 @@ public class ModerationTools
 
     public static void broadcastSanction(JsonCaseLine sanction, String toPseudo)
     {
-        String message = "Bannissement appliqué sur " + toPseudo + " pour la raison " + sanction.getMotif() + ".";
-        modMessage("Samaritan", ChatColor.DARK_RED, message);
+        new JsonModMessage("Samaritan", ModChannel.SANCTION, ChatColor.DARK_RED, "Joueur " + toPseudo + " banni pour le motif " + sanction.getMotif() + ". Durée : Définitif").send();
 
         Jedis jedis = API.getBungeeResource();
         jedis.publish("cheat", toPseudo + "#####" + sanction.getMotif());
         jedis.close();
-    }
-
-    public static void sendModMessage(JsonModMessage message)
-    {
-        Jedis jedis = API.getBungeeResource();
-        jedis.publish("moderationchan", new Gson().toJson(message));
-        jedis.close();
-    }
-
-    public static void modMessage(String from, ChatColor prefix, String message)
-    {
-        sendModMessage(new JsonModMessage(from, prefix, message));
     }
 }

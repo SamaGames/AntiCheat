@@ -1,0 +1,15 @@
+name: AntiCheat
+main: net.samagames.anticheat.AntiCheat
+version: 1.0.0
+
+authors: [Geekpower14, IamBlueSlime]
+website: http://samagames.net/
+
+depend: [SamaGamesAPI]
+
+commands:
+   anticheat:
+      description: Main anticheat commands
+
+   samaritan:
+      description: The best Global Security System

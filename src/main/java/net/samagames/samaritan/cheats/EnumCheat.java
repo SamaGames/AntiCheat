@@ -1,6 +1,6 @@
 package net.samagames.samaritan.cheats;
 
-import net.samagames.samaritan.cheats.antiprf.AntiPF;
+import net.samagames.samaritan.cheats.antipacketspamming.AntiPacketSpamming;
 import net.samagames.samaritan.cheats.antixray.Orebfuscator;
 import net.samagames.samaritan.cheats.killaura.KillAura;
 import net.samagames.samaritan.cheats.killaura.KillAuraTask;
@@ -15,8 +15,8 @@ import net.samagames.samaritan.cheats.killaura.KillAuraTask;
 public enum EnumCheat
 {
     KILLAURA("KillAura", "ForceField/KillAura", KillAuraTask.class, KillAura.class, false),
-    ANTI("Anti*", "AntiPotion/AntiFire", null, AntiPF.class, true),
-    FASTBOW("FASTBOW", "FASBOW", null, CheatModule.class, true),
+    PACKET_SPAMMING("Anti*", "Packet Spamming", null, AntiPacketSpamming.class, true),
+    FASTBOW("FastBow", "FastBow", null, CheatModule.class, true),
     ANTIXRAY("AntiXray", "AntiXray", null, Orebfuscator.class, true);
 
     private final String identifier;

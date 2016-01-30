@@ -1,4 +1,4 @@
-package net.samagames.samaritan.cheats.antiprf;
+package net.samagames.samaritan.cheats.antipacketspamming;
 
 import io.netty.channel.Channel;
 import net.samagames.api.shadows.EnumPacket;
@@ -30,7 +30,7 @@ import java.util.Map;
  * (C) Copyright Elydra Network 2014 & 2015
  * All rights reserved.
  */
-public class AntiPF extends CheatModule implements IPacketListener, Runnable
+public class AntiPacketSpamming extends CheatModule implements IPacketListener, Runnable
 {
     public Samaritan samaritan;
 
@@ -138,7 +138,7 @@ public class AntiPF extends CheatModule implements IPacketListener, Runnable
 
                     if (packetCount > LISTENED_PACKET.get(packetName))
                     {
-                        samaritan.getPunishmentsManager().automaticBan(player, EnumCheat.ANTI, new BasicCheatLog(player, EnumCheat.ANTI)
+                        samaritan.getPunishmentsManager().automaticBan(player, EnumCheat.PACKET_SPAMMING, new BasicCheatLog(player, EnumCheat.PACKET_SPAMMING)
                         {
                             private Object packet = new Object()
                             {

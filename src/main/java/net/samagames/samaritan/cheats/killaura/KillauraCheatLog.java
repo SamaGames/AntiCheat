@@ -2,7 +2,7 @@ package net.samagames.samaritan.cheats.killaura;
 
 import net.samagames.samaritan.cheats.BasicCheatLog;
 import net.samagames.samaritan.cheats.EnumCheat;
-import net.samagames.samaritan.util.LocationWrapper;
+import net.samagames.samaritan.utils.LocationWrapper;
 import org.bukkit.OfflinePlayer;
 
 import java.util.HashMap;
