@@ -11,13 +11,6 @@ import net.samagames.samaritan.Samaritan;
  */
 public class CheatModule
 {
-    public void enable(Samaritan plugin)
-    {
-
-    }
-
-    public void disable(Samaritan plugin)
-    {
-
-    }
+    public void enable(Samaritan plugin) {}
+    public void disable(Samaritan plugin) {}
 }
