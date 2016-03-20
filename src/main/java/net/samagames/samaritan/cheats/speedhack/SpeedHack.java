@@ -25,7 +25,7 @@ public class SpeedHack extends CheatModule implements Listener
         this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    @EventHandler
+    /**@EventHandler
     public void onPlayerMove(PlayerMoveEvent event)
     {
         Player player = event.getPlayer();
@@ -99,5 +99,5 @@ public class SpeedHack extends CheatModule implements Listener
         double zSquare = (two.getZ() - one.getZ()) * (two.getZ() - one.getZ());
 
         return xSquare + zSquare;
-    }
+    }**/
 }
