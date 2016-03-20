@@ -19,7 +19,7 @@ public enum EnumCheat
     PACKET_SPAMMING("PacketSpamming", "Packet Spamming", null, PacketSpamming.class, true),
     FASTBOW("FastBow", "FastBow", null, CheatModule.class, true),
     XRAY("XRay", "XRay", null, Orebfuscator.class, true),
-    SPEEDHACK("SpeedHack", "SpeedHack", null, SpeedHack.class, true),
+    //SPEEDHACK("SpeedHack", "SpeedHack", null, SpeedHack.class, true),
     ;
 
     private final String identifier;
