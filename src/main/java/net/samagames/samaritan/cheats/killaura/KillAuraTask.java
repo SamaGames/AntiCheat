@@ -9,15 +9,15 @@ package net.samagames.samaritan.cheats.killaura;
  */
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_9_R2.*;
 import net.samagames.samaritan.cheats.CheatTask;
 import net.samagames.samaritan.cheats.EnumCheat;
 import net.samagames.samaritan.utils.LocationWrapper;
 import net.samagames.samaritan.utils.MathUtils;
 import net.samagames.samaritan.utils.VectorUtils;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 

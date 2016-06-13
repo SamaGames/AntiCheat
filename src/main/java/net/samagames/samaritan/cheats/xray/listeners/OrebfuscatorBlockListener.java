@@ -16,15 +16,19 @@
 
 package net.samagames.samaritan.cheats.xray.listeners;
 
+import net.samagames.samaritan.cheats.xray.DeprecatedMethods;
 import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
 import net.samagames.samaritan.cheats.xray.hithack.BlockHitManager;
 import net.samagames.samaritan.cheats.xray.obfuscation.BlockUpdate;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 
 public class OrebfuscatorBlockListener implements Listener {
 
@@ -65,7 +69,7 @@ public class OrebfuscatorBlockListener implements Listener {
             return;
         }
 
-        if (!applyphysics(event.getBlock())) {
+        if (!DeprecatedMethods.applyPhysics(event.getBlock())) {
             return;
         }
 
@@ -88,20 +92,5 @@ public class OrebfuscatorBlockListener implements Listener {
         }
 
         BlockUpdate.Update(event.getBlock());
-    }
-
-    private boolean applyphysics(Block block) {
-        // See net.minecraft.server.v1_4_5.BlockSand.canFall(World world, int i, int j, int k)
-
-        int blockID = block.getRelative(0, -1, 0).getTypeId();
-
-        int air = Material.AIR.getId();
-        int fire = Material.FIRE.getId();
-        int water = Material.WATER.getId();
-        int water2 = Material.STATIONARY_WATER.getId();
-        int lava = Material.LAVA.getId();
-        int lava2 = Material.STATIONARY_LAVA.getId();
-
-        return (blockID == air || blockID == fire || blockID == water || blockID == water2 || blockID == lava || blockID == lava2);
     }
 }

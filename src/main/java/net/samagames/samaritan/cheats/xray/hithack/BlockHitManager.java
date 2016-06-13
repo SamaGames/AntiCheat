@@ -16,12 +16,12 @@
 
 package net.samagames.samaritan.cheats.xray.hithack;
 
+import java.util.HashMap;
+
 import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-
-import java.util.HashMap;
 
 public class BlockHitManager {
     private static HashMap<Player, PlayerBlockTracking> playersBlockTrackingStatus = new HashMap<Player, PlayerBlockTracking>();

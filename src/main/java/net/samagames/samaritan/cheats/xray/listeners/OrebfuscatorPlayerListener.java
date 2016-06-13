@@ -28,18 +28,29 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class OrebfuscatorPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+
         if (OrebfuscatorConfig.LoginNotification) {
             if (OrebfuscatorConfig.playerBypassOp(player)) {
                 Orebfuscator.message(player, "Orebfuscator bypassed because you are OP.");
             } else if (OrebfuscatorConfig.playerBypassPerms(player)) {
                 Orebfuscator.message(player, "Orebfuscator bypassed because you have permission.");
             }
+        }
+
+        if (OrebfuscatorConfig.UseProximityHider) {
+            ProximityHider.addPlayerToCheck(event.getPlayer(), null);
         }
     }
 
@@ -63,7 +74,8 @@ public class OrebfuscatorPlayerListener implements Listener {
                 ((event.getItem().getType() == Material.WOOD_HOE) ||
                         (event.getItem().getType() == Material.IRON_HOE) ||
                         (event.getItem().getType() == Material.GOLD_HOE) ||
-                        (event.getItem().getType() == Material.DIAMOND_HOE))) {
+                        (event.getItem().getType() == Material.DIAMOND_HOE)))
+        {
             BlockUpdate.Update(event.getClickedBlock());
         }
     }
@@ -71,19 +83,29 @@ public class OrebfuscatorPlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangeWorld(PlayerChangedWorldEvent event) {
         BlockHitManager.clearHistory(event.getPlayer());
+
         if (OrebfuscatorConfig.UseProximityHider) {
-            ProximityHider.clearPlayer(event.getPlayer());
+            ProximityHider.clearBlocksForOldWorld(event.getPlayer());
+            ProximityHider.addPlayerToCheck(event.getPlayer(), null);
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerMove(PlayerMoveEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
+    @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
         if (OrebfuscatorConfig.UseProximityHider) {
-            ProximityHider.playerMoved(event.getPlayer(), event.getFrom());
+            if(event.getCause() != TeleportCause.END_PORTAL
+                    && event.getCause() != TeleportCause.NETHER_PORTAL
+                    )
+            {
+                ProximityHider.addPlayerToCheck(event.getPlayer(), null);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if (OrebfuscatorConfig.UseProximityHider) {
+            ProximityHider.addPlayerToCheck(event.getPlayer(), event.getFrom());
         }
     }
 }

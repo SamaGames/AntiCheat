@@ -16,26 +16,60 @@
 
 package net.samagames.samaritan.cheats.xray.cache;
 
+import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.xray.Orebfuscator;
 import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
-import net.samagames.samaritan.cheats.xray.internal.ChunkCache;
+import net.samagames.samaritan.cheats.xray.api.nms.IChunkCache;
+import net.samagames.samaritan.cheats.xray.utils.FileHelper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
 
 public class ObfuscatedDataCache {
-    private static ChunkCache internalCache;
+    private static final String cacheFileName = "cache_config.yml";
+    private static IChunkCache internalCache;
 
-    private static ChunkCache getInternalCache() {
+    private static IChunkCache getInternalCache() {
         if (internalCache == null) {
-            internalCache = new ChunkCache();
+            internalCache = Orebfuscator.nms.createChunkCache();
         }
         return internalCache;
     }
 
-    public static void clearCache() {
-        getInternalCache().clearCache();
+    public static void closeCacheFiles() {
+        getInternalCache().closeCacheFiles();
+    }
+
+    public static void checkCacheAndConfigSynchronized() throws IOException {
+        String configContent = Samaritan.get().getConfig().saveToString();
+
+        File cacheFolder = OrebfuscatorConfig.getCacheFolder();
+        File cacheConfigFile = new File(cacheFolder, cacheFileName);
+        String cacheConfigContent = FileHelper.readFile(cacheConfigFile);
+
+        if(Objects.equals(configContent, cacheConfigContent)) return;
+
+        clearCache();
+    }
+
+    public static void clearCache() throws IOException {
+        closeCacheFiles();
+
+        File cacheFolder = OrebfuscatorConfig.getCacheFolder();
+        File cacheConfigFile = new File(cacheFolder, cacheFileName);
+
+        if(cacheFolder.exists()) {
+            FileHelper.delete(cacheFolder);
+        }
+
+        Orebfuscator.log("Cache cleared.");
+
+        cacheFolder.mkdirs();
+
+        Samaritan.get().getConfig().save(cacheConfigFile);
     }
 
     public static DataInputStream getInputStream(File folder, int x, int z) {
@@ -44,29 +78,5 @@ public class ObfuscatedDataCache {
 
     public static DataOutputStream getOutputStream(File folder, int x, int z) {
         return getInternalCache().getOutputStream(folder, x, z);
-    }
-
-    public static void ClearCache() {
-        getInternalCache().clearCache();
-        try {
-            DeleteDir(OrebfuscatorConfig.getCacheFolder());
-        } catch (Exception e) {
-            Orebfuscator.log(e);
-        }
-    }
-
-    private static void DeleteDir(File dir) {
-        try {
-            if (!dir.exists())
-                return;
-
-            if (dir.isDirectory())
-                for (File f : dir.listFiles())
-                    DeleteDir(f);
-
-            dir.delete();
-        } catch (Exception e) {
-            Orebfuscator.log(e);
-        }
     }
 }

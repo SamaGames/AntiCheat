@@ -1,38 +1,41 @@
 /*
  * Copyright (C) 2011-2014 lishid.  All rights reserved.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation,  version 3.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.samagames.samaritan.cheats.xray.obfuscation;
 
-import net.samagames.samaritan.cheats.xray.Orebfuscator;
-import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
-import net.samagames.samaritan.cheats.xray.internal.MinecraftInternals;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import net.samagames.samaritan.cheats.xray.DeprecatedMethods;
+import net.samagames.samaritan.cheats.xray.Orebfuscator;
+import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
+import net.samagames.samaritan.cheats.xray.api.types.BlockCoord;
+import net.samagames.samaritan.cheats.xray.api.types.BlockState;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+
 public class ProximityHider extends Thread implements Runnable {
-    private static final Map<Player, Set<Block>> proximityHiderTracker = new WeakHashMap<Player, Set<Block>>();
+    private static final Map<Player, ProximityHiderPlayer> proximityHiderTracker = new WeakHashMap<Player, ProximityHiderPlayer>();
     private static final Map<Player, Location> playersToCheck = new HashMap<Player, Location>();
+    private static final HashSet<Player> playersToReload = new HashSet<Player>();
 
     private static ProximityHider thread = new ProximityHider();
 
-    private Map<Player, Set<Block>> proximityHiderTrackerLocal = new WeakHashMap<Player, Set<Block>>();
+    private Map<Player, ProximityHiderPlayer> proximityHiderTrackerLocal = new WeakHashMap<Player, ProximityHiderPlayer>();
     private long lastExecute = System.currentTimeMillis();
     private AtomicBoolean kill = new AtomicBoolean(false);
     private static boolean running = false;
@@ -68,6 +71,12 @@ public class ProximityHider extends Thread implements Runnable {
                     return;
                 }
 
+                int checkRadius = OrebfuscatorConfig.ProximityHiderDistance >> 4;
+
+                if((OrebfuscatorConfig.ProximityHiderDistance & 0xf) != 0) {
+                    checkRadius++;
+                }
+
                 HashMap<Player, Location> checkPlayers = new HashMap<Player, Location>();
 
                 synchronized (playersToCheck) {
@@ -90,73 +99,92 @@ public class ProximityHider extends Thread implements Runnable {
                         }
                     }
 
-                    Location loc1 = p.getLocation();
-                    Location loc2 = checkPlayers.get(p);
+                    Location oldLocation = checkPlayers.get(p);
 
-                    // If player changed world
-                    if (!loc1.getWorld().equals(loc2.getWorld())) {
-                        synchronized (proximityHiderTracker) {
-                            proximityHiderTracker.remove(p);
-                            proximityHiderTrackerLocal.remove(p);
+                    if(oldLocation != null) {
+                        Location curLocation = p.getLocation();
+
+                        // Player didn't actually move
+                        if (curLocation.getBlockX() == oldLocation.getBlockX() && curLocation.getBlockY() == oldLocation.getBlockY() && curLocation.getBlockZ() == oldLocation.getBlockZ()) {
+                            continue;
                         }
-                        continue;
                     }
 
-                    // Player didn't actually move
-                    if (loc1.getBlockX() == loc2.getBlockX() && loc1.getBlockY() == loc2.getBlockY() && loc1.getBlockZ() == loc2.getBlockZ()) {
-                        continue;
-                    }
+                    ProximityHiderPlayer localPlayerInfo = proximityHiderTrackerLocal.get(p);
 
-                    Set<Block> blocks = proximityHiderTrackerLocal.get(p);
-                    Set<Block> removedBlocks = new HashSet<Block>();
-                    if (blocks == null) {
-                        blocks = new HashSet<Block>();
-                        proximityHiderTrackerLocal.put(p, blocks);
+                    if(localPlayerInfo == null) {
+                        proximityHiderTrackerLocal.put(p, localPlayerInfo = new ProximityHiderPlayer(p.getWorld()));
                     }
 
                     int y = (int) Math.floor(p.getLocation().getY());
 
-                    boolean skip = OrebfuscatorConfig.skipProximityHiderCheck(y);
-
                     synchronized (proximityHiderTracker) {
-                        Set<Block> synchronizedBlocks = proximityHiderTracker.get(p);
-                        if (synchronizedBlocks != null) {
-                            blocks.addAll(synchronizedBlocks);
-                            synchronizedBlocks.clear();
+                        ProximityHiderPlayer playerInfo = proximityHiderTracker.get(p);
+
+                        if (playerInfo != null) {
+                            if(!localPlayerInfo.getWorld().equals(playerInfo.getWorld())) {
+                                localPlayerInfo.setWorld(playerInfo.getWorld());
+                                localPlayerInfo.clearChunks();
+                            }
+
+                            localPlayerInfo.copyChunks(playerInfo);
+                            playerInfo.clearChunks();
                         }
                     }
 
-                    if (!skip) {
-                        for (Block b : blocks) {
-                            if (b == null || b.getWorld() == null || p.getWorld() == null) {
-                                removedBlocks.add(b);
-                                continue;
-                            }
+                    if (OrebfuscatorConfig.skipProximityHiderCheck(y)) continue;
 
-                            if (!p.getWorld().equals(b.getWorld())) {
-                                removedBlocks.add(b);
-                                continue;
-                            }
+                    if(localPlayerInfo.getWorld() == null || p.getWorld() == null || !p.getWorld().equals(localPlayerInfo.getWorld())) {
+                        localPlayerInfo.clearChunks();
+                        continue;
+                    }
 
-                            if (OrebfuscatorConfig.proximityHiderDeobfuscate(y, b) || p.getLocation().distanceSquared(b.getLocation()) < distanceSquared) {
-                                removedBlocks.add(b);
+                    ArrayList<BlockCoord> removedBlocks = new ArrayList<BlockCoord>();
+                    Location playerLocation = p.getLocation();
+                    int minChunkX = (playerLocation.getBlockX() >> 4) - checkRadius;
+                    int maxChunkX = minChunkX + (checkRadius << 1);
+                    int minChunkZ = (playerLocation.getBlockZ() >> 4) - checkRadius;
+                    int maxChunkZ = minChunkZ + (checkRadius << 1);
 
-                                if (CalculationsUtil.isChunkLoaded(b.getWorld(), b.getChunk().getX(), b.getChunk().getZ())) {
-                                    p.sendBlockChange(b.getLocation(), b.getTypeId(), b.getData());
-                                    final Block block = b;
-                                    final Player player = p;
-                                    Orebfuscator.instance.runTask(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            MinecraftInternals.updateBlockTileEntity(block, player);
-                                        }
-                                    });
+                    for(int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                        for(int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                            ArrayList<BlockCoord> blocks = localPlayerInfo.getBlocks(chunkX, chunkZ);
+
+                            if(blocks == null) continue;
+
+                            removedBlocks.clear();
+
+                            for (BlockCoord b : blocks) {
+                                if (b == null) {
+                                    removedBlocks.add(b);
+                                    continue;
+                                }
+
+                                Location blockLocation = new Location(localPlayerInfo.getWorld(), b.x, b.y, b.z);
+
+                                if (OrebfuscatorConfig.proximityHiderDeobfuscate() || playerLocation.distanceSquared(blockLocation) < distanceSquared) {
+                                    removedBlocks.add(b);
+
+                                    BlockState blockState = Orebfuscator.nms.getBlockState(localPlayerInfo.getWorld(), b.x, b.y, b.z);
+
+                                    if (blockState != null) {
+                                        DeprecatedMethods.sendBlockChange(p, blockLocation, blockState);
+                                        final BlockCoord block = b;
+                                        final Player player = p;
+                                        Orebfuscator.instance.runTask(new Runnable() {
+                                            public void run() {
+                                                Orebfuscator.nms.updateBlockTileEntity(block, player);
+                                            }
+                                        });
+                                    }
                                 }
                             }
-                        }
 
-                        for (Block b : removedBlocks) {
-                            blocks.remove(b);
+                            if(blocks.size() == removedBlocks.size()) {
+                                localPlayerInfo.removeChunk(chunkX, chunkZ);
+                            } else {
+                                blocks.removeAll(removedBlocks);
+                            }
                         }
                     }
                 }
@@ -168,7 +196,7 @@ public class ProximityHider extends Thread implements Runnable {
         running = false;
     }
 
-    public static void restart() {
+    private static void restart() {
         synchronized (thread) {
             if (thread.isInterrupted() || !thread.isAlive())
                 running = false;
@@ -180,32 +208,74 @@ public class ProximityHider extends Thread implements Runnable {
         }
     }
 
-    public static void AddProximityBlocks(Player player, ArrayList<Block> blocks) {
-        if (!OrebfuscatorConfig.UseProximityHider) {
-            return;
-        }
+    public static void addProximityBlocks(Player player, int chunkX, int chunkZ, ArrayList<BlockCoord> blocks) {
+        if (!OrebfuscatorConfig.UseProximityHider) return;
+
         restart();
+
         synchronized (proximityHiderTracker) {
-            if (!proximityHiderTracker.containsKey(player)) {
-                proximityHiderTracker.put(player, new HashSet<Block>());
+            ProximityHiderPlayer playerInfo = proximityHiderTracker.get(player);
+            World world = player.getWorld();
+
+            if (playerInfo == null) {
+                proximityHiderTracker.put(player, playerInfo = new ProximityHiderPlayer(world));
+            } else if(!playerInfo.getWorld().equals(world)) {
+                playerInfo.setWorld(world);
+                playerInfo.clearChunks();
             }
-            for (Block b : blocks) {
-                proximityHiderTracker.get(player).add(b);
+
+            if(blocks.size() > 0) {
+                playerInfo.putBlocks(chunkX, chunkZ, blocks);
+            } else {
+                playerInfo.removeChunk(chunkX, chunkZ);
             }
+        }
+
+        boolean isPlayerToReload;
+
+        synchronized (playersToReload) {
+            isPlayerToReload = playersToReload.remove(player);
+        }
+
+        if(isPlayerToReload) {
+            addPlayerToCheck(player, null);
         }
     }
 
     public static void clearPlayer(Player player) {
-        synchronized (ProximityHider.proximityHiderTracker) {
-            ProximityHider.proximityHiderTracker.remove(player);
+        synchronized (proximityHiderTracker) {
+            proximityHiderTracker.remove(player);
         }
     }
 
-    public static void playerMoved(Player player, Location location) {
-        synchronized (ProximityHider.playersToCheck) {
-            if (!ProximityHider.playersToCheck.containsKey(player)) {
-                ProximityHider.playersToCheck.put(player, location);
+    public static void clearBlocksForOldWorld(Player player) {
+        synchronized (proximityHiderTracker) {
+            ProximityHiderPlayer playerInfo = proximityHiderTracker.get(player);
+
+            if(playerInfo != null) {
+                World world = player.getWorld();
+
+                if(!playerInfo.getWorld().equals(world)) {
+                    playerInfo.setWorld(world);
+                    playerInfo.clearChunks();
+                }
             }
+        }
+    }
+
+    public static void addPlayerToCheck(Player player, Location location) {
+        synchronized (playersToCheck) {
+            if (!playersToCheck.containsKey(player)) {
+                playersToCheck.put(player, location);
+            }
+        }
+    }
+
+    public static void addPlayersToReload(HashSet<Player> players) {
+        if (!OrebfuscatorConfig.UseProximityHider) return;
+
+        synchronized (playersToReload) {
+            playersToReload.addAll(players);
         }
     }
 }

@@ -16,33 +16,36 @@
 
 package net.samagames.samaritan.cheats.xray;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.xray.cache.ObfuscatedDataCache;
-import net.samagames.samaritan.cheats.xray.internal.MinecraftInternals;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.util.*;
-
 public class OrebfuscatorConfig {
     // Constant/persistent data
-    private static final int CONFIG_VERSION = 10;
+    private static final int CONFIG_VERSION = 12;
     private static Random random = new Random();
-    private static int AvailableProcessors = Runtime.getRuntime().availableProcessors();
 
     // Main engine config
     public static boolean Enabled = true;
     public static boolean UpdateOnDamage = true;
     public static int EngineMode = 2;
     public static int InitialRadius = 1;
-    public static int UpdateRadius = 3;
+    public static int UpdateRadius = 2;
     public static int OrebfuscatorPriority = 1;
-    public static int CompressionLevel = 1;
-    public static int ProcessingThreads = AvailableProcessors - 1;
 
     // Darkness
     public static boolean DarknessHideBlocks = false;
@@ -58,12 +61,12 @@ public class OrebfuscatorConfig {
     public static int ProximityHiderDistance = 8;
     public static int ProximityHiderID = 1;
     public static int ProximityHiderEnd = 255;
-    public static boolean UseProximityHider = false;
-    public static boolean UseSpecialBlockForProximityHider = false;
+    public static boolean UseProximityHider = true;
+    public static boolean UseSpecialBlockForProximityHider = true;
     public static boolean UseYLocationProximity = false;
 
     // AntiTexturePackAndFreecam
-    public static boolean AntiTexturePackAndFreecam = false;
+    public static boolean AntiTexturePackAndFreecam = true;
     public static int AirGeneratorMaxChance = 43;
 
     // Misc
@@ -80,10 +83,17 @@ public class OrebfuscatorConfig {
     private static boolean[] NetherObfuscateBlocks = new boolean[256];
     private static boolean[] DarknessBlocks = new boolean[256];
     private static boolean[] ProximityHiderBlocks = new boolean[256];
-    private static Integer[] RandomBlocks = new Integer[]{14, 15, 16, 21, 46, 48, 49, 56, 73, 82, 129};
+    private static Integer[] RandomBlocks = new Integer[]{1, 4, 5, 14, 15, 16, 21, 46, 48, 49, 56, 73, 82, 129};
     private static Integer[] NetherRandomBlocks = new Integer[]{13, 87, 88, 112, 153};
     private static Integer[] RandomBlocks2 = RandomBlocks;
     private static List<String> DisabledWorlds = new ArrayList<String>();
+
+    // Palette
+    public static int[] NetherPaletteBlocks;
+    public static int[] NormalPaletteBlocks;
+
+    // ChunkReloader
+    public static int ChunkReloaderRate = 500;
 
     public static File getCacheFolder() {
         // Try to make the folder
@@ -97,15 +107,11 @@ public class OrebfuscatorConfig {
         return CacheFolder;
     }
 
-    private static boolean[] TransparentBlocks = new boolean[256];
-    private static boolean TransparentCached = false;
+    private static boolean[] TransparentBlocks;
+    private static boolean[] TransparentBlocksMode1;
+    private static boolean[] TransparentBlocksMode2;
 
     public static boolean isBlockTransparent(int id) {
-        if (!TransparentCached) {
-            // Generate TransparentBlocks by reading them from Minecraft
-            generateTransparentBlocks();
-        }
-
         if (id < 0)
             id += 256;
 
@@ -117,16 +123,67 @@ public class OrebfuscatorConfig {
     }
 
     private static void generateTransparentBlocks() {
-        for (int i = 0; i < TransparentBlocks.length; i++) {
-            TransparentBlocks[i] = MinecraftInternals.isBlockTransparent(i);
-            if (i == org.bukkit.Material.TNT.getId()) {
-                TransparentBlocks[i] = false;
-            }
-            if (i == org.bukkit.Material.AIR.getId()) {
-                TransparentBlocks[i] = true;
+        if(TransparentBlocks == null) {
+            readInitialTransparentBlocks();
+        }
+
+        boolean[] transparentBlocks = EngineMode == 1
+                ? TransparentBlocksMode1
+                : TransparentBlocksMode2;
+
+        System.arraycopy(transparentBlocks, 0, TransparentBlocks, 0, TransparentBlocks.length);
+
+        List<Integer> customTransparentBlocks = getIntList("Lists.TransparentBlocks", Arrays.asList(new Integer[]{ }));
+
+        for(int blockId : customTransparentBlocks) {
+            if(blockId >= 0 && blockId <= 255) {
+                TransparentBlocks[blockId] = true;
             }
         }
-        TransparentCached = true;
+
+        List<Integer> customNonTransparentBlocks = getIntList("Lists.NonTransparentBlocks", Arrays.asList(new Integer[]{ }));
+
+        for(int blockId : customNonTransparentBlocks) {
+            if(blockId >= 0 && blockId <= 255) {
+                TransparentBlocks[blockId] = false;
+            }
+        }
+    }
+
+    private static void readInitialTransparentBlocks() {
+        TransparentBlocks = new boolean[256];
+        Arrays.fill(TransparentBlocks, false);
+
+        InputStream mainStream = Orebfuscator.class.getResourceAsStream("/resources/transparent_blocks.txt");
+        readTransparentBlocks(TransparentBlocks, mainStream);
+
+        TransparentBlocksMode1 = new boolean[256];
+        System.arraycopy(TransparentBlocks, 0, TransparentBlocksMode1, 0, TransparentBlocksMode1.length);
+        InputStream mode1Stream = Orebfuscator.class.getResourceAsStream("/resources/transparent_blocks_mode1.txt");
+        if(mode1Stream != null) readTransparentBlocks(TransparentBlocksMode1, mode1Stream);
+
+        TransparentBlocksMode2 = new boolean[256];
+        System.arraycopy(TransparentBlocks, 0, TransparentBlocksMode2, 0, TransparentBlocksMode2.length);
+        InputStream mode2Stream = Orebfuscator.class.getResourceAsStream("/resources/transparent_blocks_mode2.txt");
+        if(mode2Stream != null) readTransparentBlocks(TransparentBlocksMode2, mode2Stream);
+    }
+
+    private static void readTransparentBlocks(boolean[] transparentBlocks, InputStream stream) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                int index1 = line.indexOf(":");
+                int index2 = line.indexOf(" ", index1);
+                int blockId = Integer.parseInt(line.substring(0,  index1));
+                boolean isTransparent = line.substring(index1 + 1, index2).equals("true");
+
+                transparentBlocks[blockId] = isTransparent;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean isObfuscated(int id, World.Environment environment) {
@@ -165,7 +222,7 @@ public class OrebfuscatorConfig {
         return UseYLocationProximity && y < ProximityHiderEnd;
     }
 
-    public static boolean proximityHiderDeobfuscate(int playerY, Block block) {
+    public static boolean proximityHiderDeobfuscate() {
         return UseYLocationProximity;
     }
 
@@ -223,11 +280,6 @@ public class OrebfuscatorConfig {
     public static void setInitialRadius(int data) {
         setData("Integers.InitialRadius", data);
         InitialRadius = data;
-    }
-
-    public static void setProcessingThreads(int data) {
-        setData("Integers.ProcessingThreads", data);
-        ProcessingThreads = data;
     }
 
     public static void setProximityHiderDistance(int data) {
@@ -357,24 +409,6 @@ public class OrebfuscatorConfig {
         // Version check
         int version = getInt("ConfigVersion", CONFIG_VERSION);
         if (version < CONFIG_VERSION) {
-            // Orebfuscator.log("Configuration out of date. Recreating new configuration file.");
-            // File configFile = new File(Orebfuscator.instance.getDataFolder(), "config.yml");
-            // File destination = new File(Orebfuscator.instance.getDataFolder(), "config_old.yml");
-            // if (destination.exists())
-            // {
-            // try
-            // {
-            // destination.delete();
-            // }
-            // catch (Exception e)
-            // {
-            // Orebfuscator.log(e);
-            // }
-            // }
-            // configFile.renameTo(destination);
-            // reload();
-
-            ObfuscatedDataCache.ClearCache();
             setData("ConfigVersion", CONFIG_VERSION);
         }
 
@@ -390,7 +424,6 @@ public class OrebfuscatorConfig {
         }
 
         UpdateRadius = clamp(getInt("Integers.UpdateRadius", UpdateRadius), 1, 5);
-        ProcessingThreads = clamp(getInt("Integers.ProcessingThreads", ProcessingThreads), 1, AvailableProcessors);
         MaxLoadedCacheFiles = clamp(getInt("Integers.MaxLoadedCacheFiles", MaxLoadedCacheFiles), 16, 128);
         ProximityHiderDistance = clamp(getInt("Integers.ProximityHiderDistance", ProximityHiderDistance), 2, 64);
 
@@ -398,7 +431,6 @@ public class OrebfuscatorConfig {
         ProximityHiderEnd = clamp(getInt("Integers.ProximityHiderEnd", ProximityHiderEnd), 0, 255);
         AirGeneratorMaxChance = clamp(getInt("Integers.AirGeneratorMaxChance", AirGeneratorMaxChance), 40, 100);
         OrebfuscatorPriority = clamp(getInt("Integers.OrebfuscatorPriority", OrebfuscatorPriority), Thread.MIN_PRIORITY, Thread.MAX_PRIORITY);
-        CompressionLevel = clamp(getInt("Integers.CompressionLevel", CompressionLevel), 1, 9);
         UseProximityHider = getBoolean("Booleans.UseProximityHider", UseProximityHider);
         UseSpecialBlockForProximityHider = getBoolean("Booleans.UseSpecialBlockForProximityHider", UseSpecialBlockForProximityHider);
         UseYLocationProximity = getBoolean("Booleans.UseYLocationProximity", UseYLocationProximity);
@@ -410,6 +442,8 @@ public class OrebfuscatorConfig {
         LoginNotification = getBoolean("Booleans.LoginNotification", LoginNotification);
         AntiTexturePackAndFreecam = getBoolean("Booleans.AntiTexturePackAndFreecam", AntiTexturePackAndFreecam);
         Enabled = getBoolean("Booleans.Enabled", Enabled);
+
+        generateTransparentBlocks();
 
         // Read block lists
         setBlockValues(ObfuscateBlocks, getIntList("Lists.ObfuscateBlocks", Arrays.asList(new Integer[]{14, 15, 16, 21, 54, 56, 73, 74, 129, 130})), false);
@@ -437,6 +471,63 @@ public class OrebfuscatorConfig {
         RandomBlocks2 = RandomBlocks;
 
         save();
+
+        createPaletteBlocks();
+
+        Orebfuscator.nms.setMaxLoadedCacheFiles(MaxLoadedCacheFiles);
+
+        //Make sure cache is cleared if config was changed since last start
+        try {
+            ObfuscatedDataCache.checkCacheAndConfigSynchronized();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void createPaletteBlocks() {
+        //Nether
+        ArrayList<Integer> nether = new ArrayList<Integer>();
+
+        nether.add(0);
+        nether.add(87);
+
+        if(ProximityHiderID != 0 && ProximityHiderID != 87) {
+            nether.add(ProximityHiderID);
+        }
+
+        for(Integer id : NetherRandomBlocks) {
+            if(id != null && nether.indexOf(id) < 0) {
+                nether.add(id);
+            }
+        }
+
+        NetherPaletteBlocks = new int[nether.size()];
+        for(int i = 0; i < NetherPaletteBlocks.length; i++) NetherPaletteBlocks[i] = nether.get(i);
+
+        //Normal
+        ArrayList<Integer> normal = new ArrayList<Integer>();
+
+        normal.add(0);
+        normal.add(1);
+
+        if(ProximityHiderID != 0 && ProximityHiderID != 1) {
+            normal.add(ProximityHiderID);
+        }
+
+        for(Integer id : RandomBlocks) {
+            if(id != null && normal.indexOf(id) < 0) {
+                normal.add(id);
+            }
+        }
+
+        for(Integer id : RandomBlocks2) {
+            if(id != null && normal.indexOf(id) < 0) {
+                normal.add(id);
+            }
+        }
+
+        NormalPaletteBlocks = new int[normal.size()];
+        for(int i = 0; i < NormalPaletteBlocks.length; i++) NormalPaletteBlocks[i] = normal.get(i);
     }
 
     public static void reload() {
@@ -478,7 +569,7 @@ public class OrebfuscatorConfig {
         return Samaritan.get().getConfig();
     }
 
-    public static int clamp(int value, int min, int max) {
+    private static int clamp(int value, int min, int max) {
         if (value < min)
             value = min;
         if (value > max)

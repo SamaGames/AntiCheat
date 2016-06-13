@@ -1,9 +1,9 @@
 package net.samagames.samaritan.cheats;
 
-import net.minecraft.server.v1_8_R3.MinecraftServer;
+import net.minecraft.server.v1_9_R2.MinecraftServer;
 import net.samagames.api.SamaGamesAPI;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 
 import java.util.Date;
 import java.util.UUID;

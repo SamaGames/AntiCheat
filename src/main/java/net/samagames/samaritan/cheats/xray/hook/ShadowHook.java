@@ -6,13 +6,16 @@ import net.samagames.api.shadows.IPacketListener;
 import net.samagames.api.shadows.Packet;
 import net.samagames.api.shadows.play.client.PacketBlockDig;
 import net.samagames.api.shadows.play.server.PacketChunkData;
+import net.samagames.samaritan.cheats.xray.chunkmap.ChunkData;
 import net.samagames.samaritan.cheats.xray.hithack.BlockHitManager;
 import net.samagames.samaritan.cheats.xray.obfuscation.BlockUpdate;
 import net.samagames.samaritan.cheats.xray.obfuscation.Calculations;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,21 +34,25 @@ public class ShadowHook implements IPacketListener {
         if(packet instanceof PacketChunkData)
         {
             packet.markDirty();
-            Calculations.Obfuscate((PacketChunkData) packet, player);
-        }else if(packet instanceof PacketBlockDig)
+            PacketChunkData packetChunkData = (PacketChunkData)packet;
+            ChunkData chunkData = new ChunkData();
+            chunkData.chunkX = packetChunkData.getLocX();
+            chunkData.chunkZ = packetChunkData.getLocY();
+            chunkData.groundUpContinuous = packetChunkData.isGround_upContinuous();
+            chunkData.primaryBitMask = packetChunkData.getSections();
+            chunkData.data = packetChunkData.getData();
+            chunkData.isOverworld = player.getWorld().getEnvironment() == World.Environment.NORMAL;
+
+            try {
+                byte[] newData = Calculations.obfuscateOrUseCache(chunkData, player);
+                packetChunkData.setData(newData);
+            } catch (IOException ignored) {}
+        }
+        else if(packet instanceof PacketBlockDig)
         {
             PacketBlockDig.DigType status = ((PacketBlockDig) packet).getStatus();
             if (status == PacketBlockDig.DigType.ABORT_DESTROY_BLOCK) {
-                if (!BlockHitManager.hitBlock(player, null)) {
-                    //can't cancel packet
-                }
-
-            }
-            if(status == PacketBlockDig.DigType.START_DESTROY_BLOCK)
-            {
-                Vector vector = ((PacketBlockDig) packet).getPosition();
-                Location location = new Location(player.getWorld(), vector.getX(), vector.getY(), vector.getZ());
-                BlockUpdate.Update(location.getBlock());
+                BlockHitManager.hitBlock(player, null);
             }
         }
 

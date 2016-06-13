@@ -16,8 +16,9 @@
 
 package net.samagames.samaritan.cheats.xray.cache;
 
+import net.samagames.samaritan.cheats.xray.Orebfuscator;
 import net.samagames.samaritan.cheats.xray.OrebfuscatorConfig;
-import net.samagames.samaritan.cheats.xray.internal.NBT;
+import net.samagames.samaritan.cheats.xray.api.nms.INBT;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -32,9 +33,9 @@ public class ObfuscatedCachedChunk {
     public long hash = 0L;
     private boolean loaded = false;
 
-    private static final ThreadLocal<NBT> nbtAccessor = new ThreadLocal<NBT>() {
-        protected NBT initialValue() {
-            return new NBT();
+    private static final ThreadLocal<INBT> nbtAccessor = new ThreadLocal<INBT>() {
+        protected INBT initialValue() {
+            return Orebfuscator.nms.createNBT();
         }
     };
 
@@ -45,8 +46,8 @@ public class ObfuscatedCachedChunk {
         path.mkdirs();
     }
 
-    public void Invalidate() {
-        Write(0L, new byte[0], new int[0]);
+    public void invalidate() {
+        write(0L, new byte[0], new int[0]);
     }
 
     public void free() {
@@ -55,7 +56,7 @@ public class ObfuscatedCachedChunk {
     }
 
     public long getHash() {
-        Read();
+        read();
 
         if (!loaded)
             return 0L;
@@ -63,14 +64,14 @@ public class ObfuscatedCachedChunk {
         return hash;
     }
 
-    public void Read() {
+    public void read() {
         if (loaded)
             return;
 
         try {
             DataInputStream stream = ObfuscatedDataCache.getInputStream(path, x, z);
             if (stream != null) {
-                NBT nbt = nbtAccessor.get();
+                INBT nbt = nbtAccessor.get();
 
                 nbt.Read(stream);
 
@@ -95,9 +96,9 @@ public class ObfuscatedCachedChunk {
         }
     }
 
-    public void Write(long hash, byte[] data, int[] proximityList) {
+    public void write(long hash, byte[] data, int[] proximityList) {
         try {
-            NBT nbt = nbtAccessor.get();
+            INBT nbt = nbtAccessor.get();
             nbt.reset();
 
             // Set status indicator

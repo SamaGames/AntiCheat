@@ -1,32 +1,21 @@
-/*
- * Copyright (C) 2011-2014 lishid.  All rights reserved.
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation,  version 3.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+/**
+ * @author lishid
+ * @author Aleksey Terzi
+ *
  */
 
-package net.samagames.samaritan.cheats.xray.internal;
-
-import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
-import net.minecraft.server.v1_8_R3.NBTTagCompound;
+package net.samagames.samaritan.cheats.xray.v1_9_R2;
 
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 
-//Volatile
+import net.minecraft.server.v1_9_R2.NBTCompressedStreamTools;
+import net.minecraft.server.v1_9_R2.NBTTagCompound;
+import net.samagames.samaritan.cheats.xray.api.nms.INBT;
 
-public class NBT {
+public class NBT implements INBT {
     NBTTagCompound nbt = new NBTTagCompound();
 
     public void reset() {
@@ -80,5 +69,4 @@ public class NBT {
     public void Write(DataOutput stream) throws IOException {
         NBTCompressedStreamTools.a(nbt, stream);
     }
-
 }

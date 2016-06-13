@@ -4,10 +4,6 @@ import com.google.gson.Gson;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.ComponentSerializer;
 import net.samagames.api.SamaGamesAPI;
-import net.samagames.restfull.RestAPI;
-import net.samagames.restfull.request.Request;
-import net.samagames.restfull.response.ErrorResponse;
-import net.samagames.restfull.response.StatusResponse;
 import net.samagames.samaritan.cheats.BasicCheatLog;
 import net.samagames.samaritan.cheats.EnumCheat;
 import net.samagames.samaritan.utils.JsonCaseLine;
@@ -19,6 +15,7 @@ import org.bukkit.OfflinePlayer;
 import redis.clients.jedis.Jedis;
 
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * This file is a part of the SamaGames Project CodeBase
@@ -47,10 +44,10 @@ public class PunishmentsManager
 
     public void manualDefBan(OfflinePlayer player, String reason)
     {
-        this.insertBan(player.getUniqueId(), reason);
+        /*this.insertBan(player.getUniqueId(), reason);
 
         System.out.println(player.getUniqueId() + " " + ComponentSerializer.toString(new TextComponent("Vous avez été banni définitivement : " + reason)));
-        SamaGamesAPI.get().getProxyDataManager().apiexec("kick", player.getUniqueId() + " " + new Gson().toJson(new TextComponent("Vous avez été banni définitivement : " + reason)));
+        //SamaGamesAPI.get().getProxyDataManager().apiexec("kick", player.getUniqueId() + " " + new Gson().toJson(new TextComponent("Vous avez été banni définitivement : " + reason)));
 
         JsonCaseLine sanction = new JsonCaseLine();
         sanction.setAddedBy("Samaritain");
@@ -59,17 +56,17 @@ public class PunishmentsManager
         sanction.setDurationTime(-1L);
 
         ModerationTools.addSanction(sanction, player.getUniqueId());
-        ModerationTools.broadcastSanction(sanction, player.getName());
+        ModerationTools.broadcastSanction(sanction, player.getName());*/
     }
 
     private void insertBan(UUID player, String reason)
     {
-        Object result = RestAPI.getInstance().sendRequest("player/ban", new Request().addProperty("reason", (reason == null) ? "Vous êtes banni." : reason).addProperty("playerUUID", player).addProperty("punisherUUID", new UUID(0,0)).addProperty("expiration", 0), StatusResponse.class, "POST");
+        /*Object result = RestAPI.getInstance().sendRequest("player/ban", new Request().addProperty("reason", (reason == null) ? "Vous êtes banni." : reason).addProperty("playerUUID", player).addProperty("punisherUUID", new UUID(0,0)).addProperty("expiration", 0), StatusResponse.class, "POST");
 
         if (result instanceof ErrorResponse || (result instanceof StatusResponse && !(((StatusResponse) result).getStatus())))
         {
             Bukkit.getLogger().warning("Error when trying to ban " + player + " (" + result + ")");
-        }
+        }*/
     }
 
     public void automaticBan(final OfflinePlayer player, final EnumCheat cheat, final BasicCheatLog log)
@@ -77,6 +74,7 @@ public class PunishmentsManager
         if (cheat.isBeta())
         {
             new JsonModMessage("Samaritan", ModChannel.REPORT, ChatColor.DARK_RED, player.getName() + "#####" + SamaGamesAPI.get().getServerName() + "#####" + cheat.getBanReason()).send();
+            this.samaritan.getLogger().log(Level.INFO, "Player " + player.getName() + " (" + player.getUniqueId() + ") reported for " + log.getCheat().getBanReason());
         }
         else
         {
@@ -87,6 +85,7 @@ public class PunishmentsManager
                 this.broadcastSamaritan("Eliminez ce tricheur : " + player.getName() + ", il est une menace pour le programme : " + log.getCheat().getBanReason());
                 this.manualDefBan(player, cheat.getBanReason());
                 this.addCheatLog(log);
+                this.samaritan.getLogger().log(Level.INFO, "Player " + player.getName() + " (" + player.getUniqueId() + ") banned for " + log.getCheat().getBanReason());
             }, 3 * 20L);
         }
     }

@@ -16,42 +16,47 @@
 
 package net.samagames.samaritan.cheats.xray;
 
+import java.util.logging.Logger;
+
+import net.samagames.api.shadows.ShadowsAPI;
 import net.samagames.samaritan.Samaritan;
 import net.samagames.samaritan.cheats.CheatModule;
+import net.samagames.samaritan.cheats.xray.api.nms.INmsManager;
 import net.samagames.samaritan.cheats.xray.cache.ObfuscatedDataCache;
 import net.samagames.samaritan.cheats.xray.hithack.BlockHitManager;
-import net.samagames.samaritan.cheats.xray.hook.ChunkProcessingThread;
-import net.samagames.samaritan.cheats.xray.hook.OrebfuscatorPlayerHook;
 import net.samagames.samaritan.cheats.xray.hook.ShadowHook;
-import net.samagames.samaritan.cheats.xray.internal.MinecraftInternals;
 import net.samagames.samaritan.cheats.xray.listeners.OrebfuscatorBlockListener;
+import net.samagames.samaritan.cheats.xray.listeners.OrebfuscatorChunkListener;
 import net.samagames.samaritan.cheats.xray.listeners.OrebfuscatorEntityListener;
 import net.samagames.samaritan.cheats.xray.listeners.OrebfuscatorPlayerListener;
+import net.samagames.samaritan.cheats.xray.v1_9_R2.NmsManager;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginManager;
-
-import java.util.logging.Logger;
 
 /**
  * Orebfuscator Anti X-RAY
  *
  * @author lishid
  */
-public class Orebfuscator extends CheatModule {
+public class Orebfuscator extends CheatModule
+{
 
-    public static final Logger logger = Logger.getLogger("Minecraft.XRAY");
+    public static final Logger logger = Logger.getLogger("Minecraft.OFC");
     public static Orebfuscator instance;
+
+    public static INmsManager nms;
+
+    private Samaritan plugin;
 
     @Override
     public void enable(Samaritan plugin) {
         // Get plugin manager
         PluginManager pm = plugin.getServer().getPluginManager();
-        synchronized (this)
-        {
-            instance = this;
-        }
+
+        instance = this;
+        nms = createNmsManager();
+        this.plugin = plugin;
 
         // Load configurations
         OrebfuscatorConfig.load();
@@ -60,47 +65,38 @@ public class Orebfuscator extends CheatModule {
         pm.registerEvents(new OrebfuscatorPlayerListener(), plugin);
         pm.registerEvents(new OrebfuscatorEntityListener(), plugin);
         pm.registerEvents(new OrebfuscatorBlockListener(), plugin);
+        pm.registerEvents(new OrebfuscatorChunkListener(), plugin);
 
-        pm.registerEvents(new OrebfuscatorPlayerHook(), plugin);
+        ShadowsAPI.get().registerListener(new ShadowHook());
+    }
 
-        plugin.getShadows().registerListener(new ShadowHook());
-
-        // Disable spigot's built-in orebfuscator since it has limited functionality
-        try {
-            Class.forName("org.spigotmc.AntiXray");
-            Orebfuscator.log("Spigot found! Automatically disabling built-in AntiXray.");
-            for (World world : plugin.getServer().getWorlds()) {
-                MinecraftInternals.tryDisableSpigotAntiXray(world);
-            }
-        } catch (Exception e) {
-            // Spigot not found
-        }
+    private static INmsManager createNmsManager() {
+        return new NmsManager();
     }
 
     @Override
     public void disable(Samaritan plugin) {
-        super.disable(plugin);
-        ObfuscatedDataCache.clearCache();
+        ObfuscatedDataCache.closeCacheFiles();
         BlockHitManager.clearAll();
-        ChunkProcessingThread.KillAll();
+        plugin.getServer().getScheduler().cancelTasks(plugin);
     }
 
     public void runTask(Runnable task) {
-        Samaritan.get().getServer().getScheduler().runTask(Samaritan.get(), task);
+        plugin.getServer().getScheduler().runTask(plugin, task);
     }
 
     /**
      * Log an information
      */
     public static void log(String text) {
-        logger.info("[Xray] " + text);
+        logger.info("[OFC] " + text);
     }
 
     /**
      * Log an error
      */
     public static void log(Throwable e) {
-        logger.severe("[Xray] " + e.toString());
+        logger.severe("[OFC] " + e.toString());
         e.printStackTrace();
     }
 
@@ -108,6 +104,6 @@ public class Orebfuscator extends CheatModule {
      * Send a message to a player
      */
     public static void message(CommandSender target, String message) {
-        target.sendMessage(ChatColor.AQUA + "[Xray] " + message);
+        target.sendMessage(ChatColor.AQUA + "[OFC] " + message);
     }
 }

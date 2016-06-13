@@ -16,10 +16,9 @@
 
 package net.samagames.samaritan.cheats.xray.hithack;
 
+import net.samagames.samaritan.cheats.xray.Orebfuscator;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-
-import net.samagames.samaritan.cheats.xray.Orebfuscator;
 
 public class PlayerBlockTracking {
     private Block block;
@@ -57,7 +56,6 @@ public class PlayerBlockTracking {
         hackingIndicator += value;
         if (hackingIndicator >= (1 << 14)) {
             Orebfuscator.instance.runTask(new Runnable() {
-                @Override
                 public void run() {
                     String name = player.getName();
                     Orebfuscator.log("Player \"" + name + "\" tried to hack with packet spamming.");

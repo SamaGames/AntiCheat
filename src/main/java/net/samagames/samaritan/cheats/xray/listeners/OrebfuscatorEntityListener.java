@@ -16,12 +16,11 @@
 
 package net.samagames.samaritan.cheats.xray.listeners;
 
+import net.samagames.samaritan.cheats.xray.obfuscation.BlockUpdate;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
-
-import net.samagames.samaritan.cheats.xray.obfuscation.BlockUpdate;
 
 public class OrebfuscatorEntityListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
