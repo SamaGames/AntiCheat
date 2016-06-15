@@ -82,7 +82,8 @@ public class Orebfuscator extends CheatModule
     }
 
     public void runTask(Runnable task) {
-        plugin.getServer().getScheduler().runTask(plugin, task);
+        if (plugin.isEnabled())
+            plugin.getServer().getScheduler().runTask(plugin, task);
     }
 
     /**
