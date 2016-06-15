@@ -42,7 +42,7 @@ import org.bukkit.plugin.PluginManager;
 public class Orebfuscator extends CheatModule
 {
 
-    public static final Logger logger = Logger.getLogger("Minecraft.OFC");
+    public static final Logger logger = Logger.getLogger("Minecraft.AntiXray");
     public static Orebfuscator instance;
 
     public static INmsManager nms;
@@ -90,14 +90,14 @@ public class Orebfuscator extends CheatModule
      * Log an information
      */
     public static void log(String text) {
-        logger.info("[OFC] " + text);
+        logger.info("[AntiXray] " + text);
     }
 
     /**
      * Log an error
      */
     public static void log(Throwable e) {
-        logger.severe("[OFC] " + e.toString());
+        logger.severe("[AntiXray] " + e.toString());
         e.printStackTrace();
     }
 
@@ -105,6 +105,6 @@ public class Orebfuscator extends CheatModule
      * Send a message to a player
      */
     public static void message(CommandSender target, String message) {
-        target.sendMessage(ChatColor.AQUA + "[OFC] " + message);
+        target.sendMessage(ChatColor.AQUA + "[AntiXray] " + message);
     }
 }
