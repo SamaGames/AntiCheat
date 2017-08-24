@@ -13,7 +13,7 @@ Pour plus de détails, référez-vous au texte de licence disponible [ici](LICEN
 - Type : Instrastructure
 - État : Progression continuelle
 - Développeur(s) : Silvanosky
-- CDC (Si existant) : [Samaritan Reloaded](https://www.samagames.net/ressources/samaritan-reloaded.pdf)
+- CDC (Si existant) : [Samaritan Reloaded](https://samagames.net/ressources/samaritan-reloaded.pdf)
 
 
 ## Description
